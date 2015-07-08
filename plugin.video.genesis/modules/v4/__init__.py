@@ -638,7 +638,7 @@ class index:
                 if not (getSetting("trakt_user") == '' or getSetting("trakt_password") == ''):
                     cm.append((language(30419).encode("utf-8"), 'RunPlugin(%s?action=trakt_tv_manager&name=%s&tvdb=%s)' % (sys.argv[0], systitle, systvdb)))
                 if action == 'shows_favourites':
-                    cm.append((language(30406).encode("utf-8"), 'RunPlugin(%s?action=favourite_delete&imdb=%s)' % (sys.argv[0], sysimdb))) 
+                    cm.append((language(30406).encode("utf-8"), 'RunPlugin(%s?action=favourite_delete&imdb=%s)' % (sys.argv[0], sysimdb)))
                 elif action.startswith('shows_search'):
                     cm.append((language(30405).encode("utf-8"), 'RunPlugin(%s?action=favourite_tv_from_search&imdb=%s&name=%s&year=%s&image=%s)' % (sys.argv[0], sysimdb, systitle, sysyear, sysimage)))
                 else:
@@ -1223,7 +1223,7 @@ class contextMenu:
             except: pass
             try:
 				if not 'ftp://' in folder: raise Exception()
-				from ftplib import FTP		
+				from ftplib import FTP
 				ftparg = re.compile('ftp://(.+?):(.+?)@(.+?):?(\d+)?/(.+/?)').findall(folder)
 				ftp = FTP(ftparg[0][2],ftparg[0][0],ftparg[0][1])
 				try: ftp.cwd(ftparg[0][4])
@@ -1360,7 +1360,7 @@ class contextMenu:
             except: pass
             try:
 				if not 'ftp://' in folder: raise Exception()
-				from ftplib import FTP		
+				from ftplib import FTP
 				ftparg = re.compile('ftp://(.+?):(.+?)@(.+?):?(\d+)?/(.+/?)').findall(folder)
 				ftp = FTP(ftparg[0][2],ftparg[0][0],ftparg[0][1])
 				try: ftp.cwd(ftparg[0][4])
@@ -1376,7 +1376,7 @@ class contextMenu:
             except: pass
             try:
 				if not 'ftp://' in folder: raise Exception()
-				from ftplib import FTP		
+				from ftplib import FTP
 				ftparg = re.compile('ftp://(.+?):(.+?)@(.+?):?(\d+)?/(.+/?)').findall(folder)
 				ftp = FTP(ftparg[0][2],ftparg[0][0],ftparg[0][1])
 				try: ftp.cwd(ftparg[0][4])
@@ -1742,6 +1742,8 @@ class root:
             rootList.append({'name': 30584, 'image': 'shows_trakt_watchlist.jpg', 'action': 'shows_trakt_watchlist'})
             rootList.append({'name': 30585, 'image': 'episodes_trakt_progress.jpg', 'action': 'episodes_trakt_progress'})
             rootList.append({'name': 30586, 'image': 'episodes_trakt.jpg', 'action': 'episodes_trakt'})
+            rootList.append({'name': 30595, 'image': 'movies_trakt_watchlist.jpg', 'action': 'movies_trakt_recommendations'})
+            rootList.append({'name': 30596, 'image': 'movies_trakt_watchlist.jpg', 'action': 'shows_trakt_recommendations'})
         if not (link().imdb_user == ''):
             rootList.append({'name': 30587, 'image': 'movies_imdb_watchlist.jpg', 'action': 'movies_imdb_watchlist'})
             rootList.append({'name': 30588, 'image': 'shows_imdb_watchlist.jpg', 'action': 'shows_imdb_watchlist'})
@@ -1873,6 +1875,8 @@ class link:
         self.trakt_list_remove = 'http://api-v2launch.trakt.tv/users/%s/lists/%s/items/remove'
         self.trakt_watched = 'http://api-v2launch.trakt.tv/users/%s/watched/movies'
         self.trakt_tv_watched = 'http://api-v2launch.trakt.tv/users/%s/watched/shows'
+        self.trakt_movie_recommendations = 'http://api-v2launch.trakt.tv/recommendations/movies'
+        self.trakt_tv_recommendations = 'http://api-v2launch.trakt.tv/recommendations/shows'
 
         self.tvrage_base = 'http://services.tvrage.com'
         self.tvrage_search = 'http://services.tvrage.com/feeds/search.php?show=%s'
@@ -2193,7 +2197,7 @@ class channels:
         self.sky_programme_link = 'http://tv.sky.com/programme/channel/%s/%s/%s.json'
 
     def movies(self):
-        channelDict = [('01', 'Sky Premiere', '1409'), ('02', 'Sky Premiere +1', '1823'), ('03', 'Sky Showcase', '1814'), ('04', 'Sky Greats', '1815'), ('05', 'Sky Disney', '1838'), ('06', 'Sky Family', '1808'), ('07', 'Sky Action', '1001'), ('08', 'Sky Comedy', '1002'), ('09', 'Sky Crime', '1818'), ('10', 'Sky Drama', '1816'), ('11', 'Sky Sci Fi', '1807'), ('12', 'Sky Select', '1811'), ('13', 'Film4', '1627'), ('14', 'TCM', '5605')] 
+        channelDict = [('01', 'Sky Premiere', '1409'), ('02', 'Sky Premiere +1', '1823'), ('03', 'Sky Showcase', '1814'), ('04', 'Sky Greats', '1815'), ('05', 'Sky Disney', '1838'), ('06', 'Sky Family', '1808'), ('07', 'Sky Action', '1001'), ('08', 'Sky Comedy', '1002'), ('09', 'Sky Crime', '1818'), ('10', 'Sky Drama', '1816'), ('11', 'Sky Sci Fi', '1807'), ('12', 'Sky Select', '1811'), ('13', 'Film4', '1627'), ('14', 'TCM', '5605')]
 
         threads = []
         for i in channelDict: threads.append(Thread(self.sky_list, i[0], i[1], i[2]))
@@ -2406,6 +2410,14 @@ class movies:
         self.list = index().cache(self.trakt_list, 0, url)
         try: self.list = sorted(self.list, key=itemgetter('title'))
         except: return
+        index().movieList(self.list)
+        return self.list
+
+    def trakt_recommendations(self):
+        url = link().trakt_movie_recommendations
+        self.list = index().cache(self.trakt_list, 1, url, None)
+        try: self.list = sorted(self.list, key=itemgetter('title'))
+        except: raise
         index().movieList(self.list)
         return self.list
 
@@ -2841,16 +2853,19 @@ class movies:
 
         return self.list
 
-    def trakt_list(self, url):
+    def trakt_list(self, url, filter_key='movie'):
         try:
             url += '?extended=full,images&limit=200'
             result = getTrakt().result(url)
             result = json.loads(result)
 
-            movies = []
-            for i in result:
-                try: movies.append(i['movie'])
-                except: pass
+            if filter_key is not None:
+                movies = []
+                for i in result:
+                    try: movies.append(i[filter_key])
+                    except: pass
+            else:
+                movies = result
         except:
             return
 
@@ -3281,6 +3296,14 @@ class shows:
         index().showList(self.list)
         return self.list
 
+    def trakt_recommendations(self):
+        url = link().trakt_tv_recommendations
+        self.list = index().cache(self.trakt_list, 1, url, None)
+        try: self.list = sorted(self.list, key=itemgetter('title'))
+        except: return
+        index().showList(self.list)
+        return self.list
+
     def trakt_watchlist(self):
         url = link().trakt_tv_watchlist % link().trakt_user
         self.list = index().cache(self.trakt_list, 0, url)
@@ -3582,16 +3605,19 @@ class shows:
 
         return self.list
 
-    def trakt_list(self, url):
+    def trakt_list(self, url, filter_key='show'):
         try:
             url += '?extended=full,images&limit=200'
             result = getTrakt().result(url)
             result = json.loads(result)
 
-            shows = []
-            for i in result:
-                try: shows.append(i['show'])
-                except: pass
+            if filter_key is not None:
+                shows = []
+                for i in result:
+                    try: shows.append(i[filter_key])
+                    except: pass
+            else:
+                shows = result
         except:
             return
 
@@ -3918,7 +3944,7 @@ class seasons:
             show_alt = common.parseDOM(result, "SeriesName")[0]
             dupe = re.compile('[***]Duplicate (\d*)[***]').findall(show)
             if len(dupe) > 0: show = show_alt
-            if show == '': raise Exception() 
+            if show == '': raise Exception()
             if show_alt == '': show_alt = show
             show_alt = common.replaceHTMLCodes(show_alt)
             show_alt = show_alt.encode('utf-8')
@@ -4580,4 +4606,3 @@ class episodes:
             return self.list
         except:
             return
-

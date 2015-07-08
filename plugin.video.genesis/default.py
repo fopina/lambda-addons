@@ -559,3 +559,10 @@ elif action == 'playItem':
     from modules.sources import sources
     sources().playItem(content, name, imdb, tvdb, url, source, provider)
 
+elif action == 'movies_trakt_recommendations':
+    from modules.v4 import movies
+    movies().trakt_recommendations()
+
+elif action == 'shows_trakt_recommendations':
+    from modules.v4 import shows
+    shows().trakt_recommendations()
