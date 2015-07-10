@@ -220,9 +220,9 @@ class index:
 
             response = eval(match[2].encode('utf-8'))
 
-            t1 = int(re.sub('[^0-9]', '', str(match[3])))
-            t2 = int(datetime.datetime.now().strftime("%Y%m%d%H%M"))
-            update = abs(t2 - t1) >= int(timeout*60)
+            t1 = int(match[3])
+            t2 = int(time.time())
+            update = (abs(t2 - t1) / 3600) >= int(timeout)
             if update == False:
                 return response
         except:
@@ -239,7 +239,7 @@ class index:
 
         try:
             r = repr(r)
-            t = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+            t = int(time.time())
             dbcur.execute("CREATE TABLE IF NOT EXISTS rel_list (""func TEXT, ""args TEXT, ""response TEXT, ""added TEXT, ""UNIQUE(func, args)"");")
             dbcur.execute("DELETE FROM rel_list WHERE func = '%s' AND args = '%s'" % (f, a))
             dbcur.execute("INSERT INTO rel_list Values (?, ?, ?, ?)", (f, a, r, t))
@@ -613,7 +613,7 @@ class index:
                 if not (getSetting("trakt_user") == '' or getSetting("trakt_password") == ''):
                     cm.append((language(30419).encode("utf-8"), 'RunPlugin(%s?action=trakt_tv_manager&name=%s&tvdb=%s)' % (sys.argv[0], systitle, systvdb)))
                 if action == 'shows_favourites':
-                    cm.append((language(30406).encode("utf-8"), 'RunPlugin(%s?action=favourite_delete&imdb=%s)' % (sys.argv[0], sysimdb))) 
+                    cm.append((language(30406).encode("utf-8"), 'RunPlugin(%s?action=favourite_delete&imdb=%s)' % (sys.argv[0], sysimdb)))
                 elif action.startswith('shows_search'):
                     cm.append((language(30405).encode("utf-8"), 'RunPlugin(%s?action=favourite_tv_from_search&imdb=%s&name=%s&year=%s&image=%s)' % (sys.argv[0], sysimdb, systitle, sysyear, sysimage)))
                 else:
@@ -1150,7 +1150,7 @@ class contextMenu:
             except: pass
             try:
 				if not 'ftp://' in folder: raise Exception()
-				from ftplib import FTP		
+				from ftplib import FTP
 				ftparg = re.compile('ftp://(.+?):(.+?)@(.+?):?(\d+)?/(.+/?)').findall(folder)
 				ftp = FTP(ftparg[0][2],ftparg[0][0],ftparg[0][1])
 				try: ftp.cwd(ftparg[0][4])
@@ -1287,7 +1287,7 @@ class contextMenu:
             except: pass
             try:
 				if not 'ftp://' in folder: raise Exception()
-				from ftplib import FTP		
+				from ftplib import FTP
 				ftparg = re.compile('ftp://(.+?):(.+?)@(.+?):?(\d+)?/(.+/?)').findall(folder)
 				ftp = FTP(ftparg[0][2],ftparg[0][0],ftparg[0][1])
 				try: ftp.cwd(ftparg[0][4])
@@ -1303,7 +1303,7 @@ class contextMenu:
             except: pass
             try:
 				if not 'ftp://' in folder: raise Exception()
-				from ftplib import FTP		
+				from ftplib import FTP
 				ftparg = re.compile('ftp://(.+?):(.+?)@(.+?):?(\d+)?/(.+/?)').findall(folder)
 				ftp = FTP(ftparg[0][2],ftparg[0][0],ftparg[0][1])
 				try: ftp.cwd(ftparg[0][4])
@@ -2080,7 +2080,7 @@ class channels:
         self.sky_programme_link = 'http://tv.sky.com/programme/channel/%s/%s/%s.json'
 
     def movies(self):
-        channelDict = [('01', 'Sky Premiere', '1409'), ('02', 'Sky Premiere +1', '1823'), ('03', 'Sky Showcase', '1814'), ('04', 'Sky Greats', '1815'), ('05', 'Sky Disney', '1838'), ('06', 'Sky Family', '1808'), ('07', 'Sky Action', '1001'), ('08', 'Sky Comedy', '1002'), ('09', 'Sky Crime', '1818'), ('10', 'Sky Drama', '1816'), ('11', 'Sky Sci Fi', '1807'), ('12', 'Sky Select', '1811'), ('13', 'Film4', '1627'), ('14', 'TCM', '5605')] 
+        channelDict = [('01', 'Sky Premiere', '1409'), ('02', 'Sky Premiere +1', '1823'), ('03', 'Sky Showcase', '1814'), ('04', 'Sky Greats', '1815'), ('05', 'Sky Disney', '1838'), ('06', 'Sky Family', '1808'), ('07', 'Sky Action', '1001'), ('08', 'Sky Comedy', '1002'), ('09', 'Sky Crime', '1818'), ('10', 'Sky Drama', '1816'), ('11', 'Sky Sci Fi', '1807'), ('12', 'Sky Select', '1811'), ('13', 'Film4', '1627'), ('14', 'TCM', '5605')]
 
         threads = []
         for i in channelDict: threads.append(Thread(self.sky_list, i[0], i[1], i[2]))
@@ -3805,7 +3805,7 @@ class seasons:
             show_alt = common.parseDOM(result, "SeriesName")[0]
             dupe = re.compile('[***]Duplicate (\d*)[***]').findall(show)
             if len(dupe) > 0: show = show_alt
-            if show == '': raise Exception() 
+            if show == '': raise Exception()
             if show_alt == '': show_alt = show
             show_alt = common.replaceHTMLCodes(show_alt)
             show_alt = show_alt.encode('utf-8')
@@ -4467,4 +4467,3 @@ class episodes:
             return self.list
         except:
             return
-

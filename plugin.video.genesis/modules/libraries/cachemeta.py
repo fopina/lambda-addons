@@ -26,7 +26,7 @@ except:
 
 import re
 import hashlib
-import datetime
+import time
 import control
 
 
@@ -52,9 +52,9 @@ def get(function, timeout, *args):
 
         response = eval(match[2].encode('utf-8'))
 
-        t1 = int(re.sub('[^0-9]', '', str(match[3])))
-        t2 = int(datetime.datetime.now().strftime("%Y%m%d%H%M"))
-        update = abs(t2 - t1) >= int(timeout*60)
+        t1 = int(match[3])
+        t2 = int(time.time())
+        update = (abs(t2 - t1) / 3600) >= int(timeout)
         if update == False:
             return response
     except:
@@ -73,7 +73,7 @@ def get(function, timeout, *args):
         insert = True
         if r['cover_url'] == '' or r['backdrop_url'] == '': insert = False
         r = repr(r)
-        t = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+        t = int(time.time())
         dbcur.execute("CREATE TABLE IF NOT EXISTS rel_list (""func TEXT, ""args TEXT, ""response TEXT, ""added TEXT, ""UNIQUE(func, args)"");")
         dbcur.execute("DELETE FROM rel_list WHERE func = '%s' AND args = '%s'" % (f, a))
         if insert == True: dbcur.execute("INSERT INTO rel_list Values (?, ?, ?, ?)", (f, a, r, t))
@@ -85,4 +85,3 @@ def get(function, timeout, *args):
         return eval(r.encode('utf-8'))
     except:
         pass
-

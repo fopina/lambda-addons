@@ -26,7 +26,7 @@ except:
 
 import re
 import hashlib
-import datetime
+import time
 import control
 
 
@@ -57,9 +57,9 @@ def get(function, timeout, *args, **table):
 
         response = eval(match[2].encode('utf-8'))
 
-        t1 = int(re.sub('[^0-9]', '', str(match[3])))
-        t2 = int(datetime.datetime.now().strftime("%Y%m%d%H%M"))
-        update = abs(t2 - t1) >= int(timeout*60)
+        t1 = int(match[3])
+        t2 = int(time.time())
+        update = (abs(t2 - t1) / 3600) >= int(timeout)
         if update == False:
             return response
     except:
@@ -76,7 +76,7 @@ def get(function, timeout, *args, **table):
 
     try:
         r = repr(r)
-        t = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+        t = int(time.time())
         dbcur.execute("CREATE TABLE IF NOT EXISTS %s (""func TEXT, ""args TEXT, ""response TEXT, ""added TEXT, ""UNIQUE(func, args)"");" % table)
         dbcur.execute("DELETE FROM %s WHERE func = '%s' AND args = '%s'" % (table, f, a))
         dbcur.execute("INSERT INTO %s Values (?, ?, ?, ?)" % table, (f, a, r, t))
@@ -100,4 +100,3 @@ def clear(table):
         dbcon.commit()
     except:
         pass
-
