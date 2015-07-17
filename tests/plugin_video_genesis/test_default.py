@@ -1,7 +1,7 @@
-from koditestcase import KodiTestCase
+from .genesistestcase import GenesisTestCase
 
 
-class TestDefault(KodiTestCase):
+class TestDefault(GenesisTestCase):
     def test_movies_featured(self):
         self.execute(
             'default.py',

@@ -1,7 +1,7 @@
-from koditestcase import KodiTestCase
+from .genesistestcase import GenesisTestCase
 
 
-class TestSources(KodiTestCase):
+class TestSources(GenesisTestCase):
     def test_alluc(self):
         self.skipTest("alluc not working anymore?")
 

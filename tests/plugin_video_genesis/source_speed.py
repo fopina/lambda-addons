@@ -1,8 +1,8 @@
 # no test_ prefix in the filename so it is skipped by untargetted test run
-from koditestcase import KodiTestCase
+from .genesistestcase import GenesisTestCase
 
 
-class SourceSpeedTest(KodiTestCase):
+class SourceSpeedTest(GenesisTestCase):
     def test_play(self):
         '''
         plugin.video.genesis/modules/sources$ ls *.py | grep "mv" | sed -e "s/\.py$//g" | sed -e 's/_mv$//g' | sed -e 's/_mv_tv$//g'
