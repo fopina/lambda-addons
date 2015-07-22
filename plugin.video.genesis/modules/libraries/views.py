@@ -78,7 +78,7 @@ def setView(content, viewDict=None):
                 if view == None: raise Exception()
                 return control.execute('Container.SetViewMode(%s)' % str(view))
             except:
-                try: xbmc.executebuiltin('Container.SetViewMode(%s)' % str(viewDict[skin]))
+                try: return control.execute('Container.SetViewMode(%s)' % str(viewDict[skin]))
                 except: return
 
         control.sleep(100)

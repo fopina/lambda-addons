@@ -40,7 +40,7 @@ def getCategory():
     getDirectory('0', phLink, '0', '0', '0', '0', '0', close=False)
 
     addCategoryItem('NHL', 'nhlDirectory', 'hockey.jpg')
-    addCategoryItem('Settings', 'openSettings', 'settings.png', isFolder=False)
+    addCategoryItem('Settings', 'openSettings', 'settings.png')
     addCategoryItem('Downloads', 'downloader', 'downloader.png')
     addCategoryItem('Search', 'search', 'search.png')
 
@@ -91,7 +91,7 @@ def getDirectory(name, url, audio, image, fanart, playable, content, close=True)
             try: image = re.findall('<thumbnail>(.+?)</thumbnail>', info)[0]
             except: image = '0'
 
-            addDirectoryItem(name, '0', '0', image, image, fanart, '0', '0', {}, isFolder=False)
+            addDirectoryItem(name, '0', '0', image, image, fanart, '0', '0', {})
         except:
             pass
 
@@ -110,7 +110,7 @@ def getDirectory(name, url, audio, image, fanart, playable, content, close=True)
             try: audio = re.findall('<sound>(.+?)</sound>', popup)[0]
             except: audio = '0'
 
-            addDirectoryItem(name, url, 'openDialog', image, image, fanart, audio, '0', {}, isFolder=False)
+            addDirectoryItem(name, url, 'openDialog', image, image, fanart, audio, '0', {})
         except:
             pass
 
@@ -118,11 +118,11 @@ def getDirectory(name, url, audio, image, fanart, playable, content, close=True)
     special = re.compile('<name>([^<]+)</name><link>([^<]+)</link><thumbnail>([^<]+)</thumbnail><date>([^<]+)</date>').findall(result)
     for name, url, image, date in special:
         if re.search(r'\d+', date): name += ' [COLOR red] Updated %s[/COLOR]' % date
-        addDirectoryItem(name, url, 'ndmode', image, image, fanart, '0', '0', {}, isFolder=True)
+        addDirectoryItem(name, url, 'ndmode', image, image, fanart, '0', '0', {})
 
     special = re.compile('<name>([^<]+)</name><link>([^<]+)</link><thumbnail>([^<]+)</thumbnail><mode>([^<]+)</mode>').findall(result)
     for name, url, image, action in special:
-        addDirectoryItem(name, url, action, image, image, fanart, '0', '0', {}, isFolder=True)
+        addDirectoryItem(name, url, action, image, image, fanart, '0', '0', {})
 
 
 
@@ -205,7 +205,7 @@ def getDirectory(name, url, audio, image, fanart, playable, content, close=True)
                 except:
                     pass
 
-            addDirectoryItem(name, url, 'ndmode', image, image, fanart2, '0', content, data, totalItems=totalItems, isFolder=True)
+            addDirectoryItem(name, url, 'ndmode', image, image, fanart2, '0', content, data, totalItems=totalItems)
         except:
             pass
 
@@ -361,14 +361,14 @@ def subDirectory(name, url, audio, image, fanart, playable, tvshow, content):
 
 
 def getSearch():
-    addDirectoryItem('Search...', '0', 'searchDirectory', '0', '0', '0', '0', '0', {}, isFolder=True)
-    addDirectoryItem('Clear History', '0', 'clearSearch', '0', '0', '0', '0', '0', {}, isFolder=False)
+    addDirectoryItem('Search...', '0', 'searchDirectory', '0', '0', '0', '0', '0', {})
+    addDirectoryItem('Clear History', '0', 'clearSearch', '0', '0', '0', '0', '0', {})
 
     try:
         def search(): return
         result = cache.get(search, 600000000, table='rel_srch')
         for q in result:
-                try: addDirectoryItem('%s...' % q, q, 'searchDirectory2', '0', '0', '0', '0', '0', {}, isFolder=True)
+                try: addDirectoryItem('%s...' % q, q, 'searchDirectory2', '0', '0', '0', '0', '0', {})
                 except: pass
     except:
         pass
@@ -468,7 +468,7 @@ def searchDirectory(query=None):
 
                     if re.search('[a-zA-Z]', vip): name += ' [COLOR orange]%s[/COLOR]' % vip
 
-                    addDirectoryItem(name, url, 'ndmode', image, image, fanart2, '0', content, data, isFolder=True)
+                    addDirectoryItem(name, url, 'ndmode', image, image, fanart2, '0', content, data)
                 except:
                     pass
 
@@ -519,32 +519,24 @@ def searchDirectory(query=None):
 
 
 def clearSearch():
-    try:
-        cache.clear('rel_srch')
-        control.infoDialog('[COLOR gold]Search History Cleared[/COLOR]')
-        control.execute('Container.Refresh')
-    except:
-        pass
+    cache.clear('rel_srch')
+    control.refresh()
 
 
 def resolveUrl(name, url, audio, image, fanart, playable, content):
-
-    if '.f4m'in url:
-        try:
+    try:
+        if '.f4m'in url:
             label = cleantitle(name)
             ext = url.split('?')[0].split('&')[0].split('|')[0].rsplit('.')[-1].replace('/', '').lower()
             if not ext == 'f4m': raise Exception()
             from modules.libraries.f4mproxy.F4mProxy import f4mProxyHelper
             return f4mProxyHelper().playF4mLink(url, label, None, None,'',image)
-        except:
-            pass
-
-    #legacy issue, will be removed later
-    if 'afdah.org' in url and not '</source>' in url: url += '<source>afdah</source>'
 
 
-    if '</source>' in url:
-        try:
+        #legacy issue, will be removed later
+        if 'afdah.org' in url and not '</source>' in url: url += '<source>afdah</source>'
+
+        if '</source>' in url:
             source = re.compile('<source>(.+?)</source>').findall(url)[0]
             url = re.compile('(.+?)<source>').findall(url)[0]
 
@@ -552,9 +544,9 @@ def resolveUrl(name, url, audio, image, fanart, playable, content):
                 try: call = __import__('modules.sources.%s%s' % (source, i), globals(), locals(), ['object'], -1).source()
                 except: pass
 
-            from modules import sources ; dict = sources.sources()
+            from modules import sources ; d = sources.sources()
 
-            url = call.get_sources(url, dict.hosthdfullDict, dict.hostsdfullDict, dict.hostlocDict)
+            url = call.get_sources(url, d.hosthdfullDict, d.hostsdfullDict, d.hostlocDict)
 
             if type(url) == list and len(url) == 1:
                 url = url[0]['url']
@@ -570,29 +562,28 @@ def resolveUrl(name, url, audio, image, fanart, playable, content):
                 url = u[select]
 
             url = call.resolve(url)
-        except:
-            pass
 
 
-    from modules import resolvers
-    url = resolvers.request(url)
+        from modules import resolvers
+        url = resolvers.request(url)
 
-    if url == None:
-        return control.infoDialog('[COLOR red]Unplayable stream[/COLOR]')
+        if type(url) == list and len(url) == 1:
+            url = url[0]['url']
 
+        elif type(url) == list:
+            url = sorted(url, key=lambda k: k['quality'])
+            for i in url: i.update((k, '720p') for k, v in i.iteritems() if v == 'HD')
+            for i in url: i.update((k, '480p') for k, v in i.iteritems() if v == 'SD')
+            q = [i['quality'].upper() for i in url]
+            u = [i['url'] for i in url]
+            select = control.selectDialog(q)
+            if select == -1: return
+            url = u[select]
 
-    if type(url) == list and len(url) == 1:
-        url = url[0]['url']
-
-    elif type(url) == list:
-        url = sorted(url, key=lambda k: k['quality'])
-        for i in url: i.update((k, '720p') for k, v in i.iteritems() if v == 'HD')
-        for i in url: i.update((k, '480p') for k, v in i.iteritems() if v == 'SD')
-        q = [i['quality'].upper() for i in url]
-        u = [i['url'] for i in url]
-        select = control.selectDialog(q)
-        if select == -1: return
-        url = u[select]
+        if url == None: raise Exception()
+    except:
+        return control.infoDialog('Unplayable stream')
+        pass
 
 
     if playable == 'true':

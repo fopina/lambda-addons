@@ -26,7 +26,7 @@ except:
 
 import re
 import hashlib
-import datetime
+import time
 import control
 
 
@@ -57,9 +57,9 @@ def get(function, timeout, *args, **table):
 
         response = eval(match[2].encode('utf-8'))
 
-        t1 = int(re.sub('[^0-9]', '', str(match[3])))
-        t2 = int(datetime.datetime.now().strftime("%Y%m%d%H%M"))
-        update = abs(t2 - t1) >= int(timeout*60)
+        t1 = int(match[3])
+        t2 = int(time.time())
+        update = (abs(t2 - t1) / 3600) >= int(timeout)
         if update == False:
             return response
     except:
@@ -76,7 +76,7 @@ def get(function, timeout, *args, **table):
 
     try:
         r = repr(r)
-        t = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+        t = int(time.time())
         dbcur.execute("CREATE TABLE IF NOT EXISTS %s (""func TEXT, ""args TEXT, ""response TEXT, ""added TEXT, ""UNIQUE(func, args)"");" % table)
         dbcur.execute("DELETE FROM %s WHERE func = '%s' AND args = '%s'" % (table, f, a))
         dbcur.execute("INSERT INTO %s Values (?, ?, ?, ?)" % table, (f, a, r, t))
@@ -90,14 +90,27 @@ def get(function, timeout, *args, **table):
         pass
 
 
-def clear(table):
+def clear(table=None):
     try:
+        if table == None: table = ['rel_list', 'rel_lib']
+        elif not type(table) == list: table = [table]
+
+        yes = control.yesnoDialog('Are you sure?', '', '')
+        if not yes: return
+
         control.makeFile(control.dataPath)
         dbcon = database.connect(control.cacheFile)
         dbcur = dbcon.cursor()
-        dbcur.execute("DROP TABLE IF EXISTS %s" % table)
-        dbcur.execute("VACUUM")
-        dbcon.commit()
+
+        for t in table:
+            try:
+                dbcur.execute("DROP TABLE IF EXISTS %s" % t)
+                dbcur.execute("VACUUM")
+                dbcon.commit()
+            except:
+                pass
+
+        control.infoDialog('Process Complete')
     except:
         pass
 

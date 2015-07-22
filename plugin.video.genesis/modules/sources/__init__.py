@@ -42,14 +42,6 @@ from modules.resolvers import premiumize
 from modules import resolvers
 
 
-class Thread(threading.Thread):
-    def __init__(self, target, *args):
-        self._target = target
-        self._args = args
-        threading.Thread.__init__(self)
-    def run(self):
-        self._target(*self._args)
-
 
 class sources:
     def __init__(self):
@@ -129,12 +121,12 @@ class sources:
                     query = 'action=playItem&content=%s&name=%s&imdb=%s&tvdb=%s&url=%s&source=%s&provider=%s' % (content, sysname, sysimdb, systvdb, sysurl, syssource, sysprovider)
 
                     cm = []
-                    cm.append((control.lang(30401).encode('utf-8'), 'RunPlugin(%s?action=item_queue)' % (sysaddon)))
+                    cm.append((control.lang(30401).encode('utf-8'), 'RunPlugin(%s?action=queueItem)' % (sysaddon)))
                     cm.append((control.lang(30402).encode('utf-8'), 'RunPlugin(%s?action=addDownload&name=%s&url=%s&image=%s&provider=%s)' % (sysaddon, sysname, sysurl, sysimage, sysprovider)))
                     cm.append((control.lang(30412).encode('utf-8'), 'Action(Info)'))
-                    cm.append((control.lang(30427).encode('utf-8'), 'RunPlugin(%s?action=container_refresh)' % (sysaddon)))
-                    cm.append((control.lang(30410).encode('utf-8'), 'RunPlugin(%s?action=settings_open)' % (sysaddon)))
-                    cm.append((control.lang(30411).encode('utf-8'), 'RunPlugin(%s?action=playlist_open)' % (sysaddon)))
+                    cm.append((control.lang(30427).encode('utf-8'), 'RunPlugin(%s?action=refresh)' % (sysaddon)))
+                    cm.append((control.lang(30410).encode('utf-8'), 'RunPlugin(%s?action=openSettings)' % (sysaddon)))
+                    cm.append((control.lang(30411).encode('utf-8'), 'RunPlugin(%s?action=openPlaylist)' % (sysaddon)))
 
                     item = control.item(source, iconImage='DefaultVideo.png', thumbnailImage=thumb)
                     try: item.setArt({'poster': poster, 'tvshow.poster': poster, 'season.poster': poster, 'banner': banner, 'tvshow.banner': banner, 'season.banner': banner})
@@ -353,6 +345,23 @@ class sources:
             pass
 
 
+    def clearSources(self):
+        try:
+            yes = control.yesnoDialog('Are you sure?', '', '')
+            if not yes: return
+
+            control.makeFile(control.dataPath)
+            dbcon = database.connect(control.cachesourcesFile)
+            dbcur = dbcon.cursor()
+            dbcur.execute("DROP TABLE IF EXISTS rel_src")
+            dbcur.execute("VACUUM")
+            dbcon.commit()
+
+            control.infoDialog('Process Complete')
+        except:
+            pass
+
+
     def sourcesFilter(self):
         try: customhdDict = [control.setting("hosthd1"), control.setting("hosthd2"), control.setting("hosthd3"), control.setting("hosthd4"), control.setting("hosthd5"), control.setting("hosthd6"), control.setting("hosthd7"), control.setting("hosthd8"), control.setting("hosthd9"), control.setting("hosthd10"), control.setting("hosthd11"), control.setting("hosthd12"), control.setting("hosthd13"), control.setting("hosthd14"), control.setting("hosthd15"), control.setting("hosthd16"), control.setting("hosthd17"), control.setting("hosthd18"), control.setting("hosthd19"), control.setting("hosthd20")]
         except: customhdDict = []
@@ -552,3 +561,14 @@ class sources:
         self.hostsdfullDict = self.hostprDict + self.hosthqDict + self.hostmqDict + self.hostlqDict
 
         self.hosthdfullDict = self.hostprDict + self.hosthdDict
+
+
+
+class Thread(threading.Thread):
+    def __init__(self, target, *args):
+        self._target = target
+        self._args = args
+        threading.Thread.__init__(self)
+    def run(self):
+        self._target(*self._args)
+

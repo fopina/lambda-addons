@@ -36,6 +36,7 @@ def resolve(url):
         u = 'http://api.vk.com/method/video.getEmbed?oid=%s&video_id=%s&embed_hash=%s' % (oid, id, hash)
  
         result = client.request(u)
+        result = re.sub(r'[^\x00-\x7F]+',' ', result)
 
         try: result = json.loads(result)['response']
         except: result = _private(oid, id)
@@ -80,6 +81,7 @@ def _private(oid, id):
 
         result = client.request(url)
         result = re.compile('var vars *= *({.+?});').findall(result)[0]
+        result = re.sub(r'[^\x00-\x7F]+',' ', result)
         result = json.loads(result)
 
         return result

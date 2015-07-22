@@ -54,18 +54,18 @@ def downloader():
         item = control.item('[COLOR red]Stop Downloads[/COLOR]', iconImage=thumb, thumbnailImage=thumb)
         item.addContextMenuItems([], replaceItems=True)
         item.setProperty('fanart_image', fanart)
-        control.addItem(handle=int(sys.argv[1]), url=sys.argv[0]+'?action=stopDownload', listitem=item)
+        control.addItem(handle=int(sys.argv[1]), url=sys.argv[0]+'?action=stopDownload', listitem=item, isFolder=True)
     else:
         item = control.item('[COLOR FF00b8ff]Start Downloads[/COLOR]', iconImage=thumb, thumbnailImage=thumb)
         item.addContextMenuItems([], replaceItems=True)
         item.setProperty('fanart_image', fanart)
-        control.addItem(handle=int(sys.argv[1]), url=sys.argv[0]+'?action=startDownload', listitem=item)
+        control.addItem(handle=int(sys.argv[1]), url=sys.argv[0]+'?action=startDownload', listitem=item, isFolder=True)
 
     if status == 'downloading':
         item = control.item('[COLOR gold]Download Status[/COLOR]', iconImage=thumb, thumbnailImage=thumb)
         item.addContextMenuItems([], replaceItems=True)
         item.setProperty('Fanart_Image', fanart)
-        control.addItem(handle=int(sys.argv[1]), url=sys.argv[0]+'?action=statusDownload', listitem=item)
+        control.addItem(handle=int(sys.argv[1]), url=sys.argv[0]+'?action=statusDownload', listitem=item, isFolder=True)
 
     def download(): return []
     result = cache.get(download, 600000000, table='rel_dl')
@@ -73,10 +73,12 @@ def downloader():
     for i in result:
         try:
             cm = []
-            cm.append(('[COLOR red]Remove From Queue[/COLOR]', 'RunPlugin(%s?action=removeDownload&url=%s)' % (sys.argv[0], urllib.quote_plus(i['url']))))
+            cm.append(('Remove from Queue', 'RunPlugin(%s?action=removeDownload&url=%s)' % (sys.argv[0], urllib.quote_plus(i['url']))))
             item = control.item(i['name'], iconImage=i['image'], thumbnailImage=i['image'])
             item.addContextMenuItems(cm, replaceItems=True)
             item.setProperty('fanart_image', fanart)
+            item.setProperty('Video', 'true')
+            item.setProperty('IsPlayable', 'true')
             control.addItem(handle=int(sys.argv[1]), url=i['url'], listitem=item)
         except:
             pass
@@ -95,20 +97,17 @@ def addDownload(name, url, image, provider=None):
     if name in result:
         return control.infoDialog('Item Already In Your Queue', name)
 
-
-    if not provider == None:
-        try:
+    try:
+        if not provider == None:
             from modules.sources import sources
             url = sources().sourcesResolve(url, provider)
-        except:
-            pass
+            if url == None: raise Exception()
 
 
-    #legacy issue, will be removed later
-    if 'afdah.org' in url and not '</source>' in url: url += '<source>afdah</source>'
+        #legacy issue, will be removed later
+        if 'afdah.org' in url and not '</source>' in url: url += '<source>afdah</source>'
 
-    if '</source>' in url:
-        try:
+        if '</source>' in url:
             source = re.compile('<source>(.+?)</source>').findall(url)[0]
             url = re.compile('(.+?)<source>').findall(url)[0]
 
@@ -116,28 +115,50 @@ def addDownload(name, url, image, provider=None):
                 try: call = __import__('modules.sources.%s%s' % (source, i), globals(), locals(), ['object'], -1).source()
                 except: pass
 
-            from modules import sources ; dict = sources.sources()
+            from modules import sources ; d = sources.sources()
 
-            url = call.get_sources(url, dict.hosthdfullDict, dict.hostsdfullDict, dict.hostlocDict)
+            url = call.get_sources(url, d.hosthdfullDict, d.hostsdfullDict, d.hostlocDict)
 
             if type(url) == list:
                 url = sorted(url, key=lambda k: k['quality'])
                 url = url[0]['url']
 
             url = call.resolve(url)
-        except:
-            pass
 
 
-    from modules import resolvers
-    url = resolvers.request(url)
+        from modules import resolvers
+        url = resolvers.request(url)
 
-    if type(url) == list:
-        url = sorted(url, key=lambda k: k['quality'])
-        url = url[0]['url']
+        if type(url) == list:
+            url = sorted(url, key=lambda k: k['quality'])
+            url = url[0]['url']
 
-    if url == None:
+        if url == None: raise Exception()
+    except:
         return control.infoDialog('Unplayable stream')
+        pass
+
+    try:
+        u = url.split('|')[0]
+        try: headers = dict(urlparse.parse_qsl(url.rsplit('|', 1)[1]))
+        except: headers = dict('')
+
+        ext = os.path.splitext(urlparse.urlparse(u).path)[1][1:].lower()
+        if ext == 'm3u8': raise Exception()
+        #if not ext in ['mp4', 'mkv', 'flv', 'avi', 'mpg']: ext = 'mp4'
+        dest = name + '.' + ext
+
+        req = urllib2.Request(u, headers=headers)
+        resp = urllib2.urlopen(req, timeout=30)
+        size = int(resp.headers['Content-Length'])
+        size = ' %.2f GB' % (float(size) / 1073741824)
+
+        no = control.yesnoDialog(dest, 'Complete file is' + size, 'Continue with download?', name + ' - ' + 'Confirm Download', 'Confirm', 'Cancel')
+
+        if no: return
+    except:
+        return control.infoDialog('Unable to download')
+        pass
 
     def download(): return [{'name': name, 'url': url, 'image': image}]
     result = cache.get(download, 600000000, table='rel_dl')
@@ -145,7 +166,7 @@ def addDownload(name, url, image, provider=None):
     def download(): return result + [{'name': name, 'url': url, 'image': image}]
     result = cache.get(download, 0, table='rel_dl')
 
-    control.infoDialog('Item Added To Your Queue', name)
+    control.infoDialog('Item Added to Queue', name)
 
 
 def removeDownload(url):
@@ -159,7 +180,7 @@ def removeDownload(url):
         def download(): return result
         result = cache.get(download, 0, table='rel_dl')
 
-        control.execute('Container.Refresh')
+        control.refresh()
     except:
         control.infoDialog('You need to remove file manually', 'Can not remove from Queue')
 
@@ -168,6 +189,10 @@ def startDownload():
     if downloadPath == '':
         return control.infoDialog('You need to set your download folder in addon settings first', 'File Not Downloadable')
 
+    control.execute('RunPlugin(%s?action=startDownloadThread)' % sys.argv[0])
+
+
+def startDownloadThread():
     dlThread = downloadThread()
     dlThread.start()
 
@@ -232,7 +257,7 @@ class MyDownloads(pyxbmct.AddonDialogWindow):
 
 
     def setAnimation(self, control):
-        control.setAnimations([('WindowOpen', 'effect=fade start=0 end=100 time=250',), ('WindowClose', 'effect=fade start=100 end=0 time=250',)])
+        control.setAnimations([('WindowOpen', 'effect=fade start=0 end=100 time=200',), ('WindowClose', 'effect=fade start=100 end=0 time=300',)])
 
 
     def stopDownload(self):
@@ -253,11 +278,13 @@ class downloadThread(threading.Thread):
         for item in result:
             self.name = item['name'] ; self.image = item['image'] ; self.url = item['url']
 
+            sysname = self.name.translate(None, '\/:*?"<>|').strip('.')
+
             url = self.url.split('|')[0]
             try: headers = dict(urlparse.parse_qsl(self.url.rsplit('|', 1)[1]))
             except: headers = dict('')
 
-            ext = os.path.splitext(urlparse.urlparse(url).path)[1][1:]
+            ext = os.path.splitext(urlparse.urlparse(url).path)[1][1:].lower()
             if not ext in ['mp4', 'mkv', 'flv', 'avi', 'mpg']: ext = 'mp4'
 
             hdlr = re.compile('.+? ([(]\d{4}[)]|S\d*E\d*)$').findall(self.name)
@@ -273,11 +300,11 @@ class downloadThread(threading.Thread):
             if self.content == 'Movies':
                 dest = os.path.join(downloadPath, 'Movies')
                 control.makeFile(dest)
-                dest = os.path.join(dest, self.name)
+                dest = os.path.join(dest, sysname)
                 control.makeFile(dest)
 
             elif self.content == 'TVShows':
-                d = re.compile('(.+?) S(\d*)E(\d*)$').findall(self.name)[0]
+                d = re.compile('(.+?) S(\d*)E(\d*)$').findall(sysname)[0]
                 dest = os.path.join(downloadPath, 'TVShows')
                 control.makeFile(dest)
                 dest = os.path.join(dest, d[0])
@@ -290,7 +317,7 @@ class downloadThread(threading.Thread):
                 control.makeFile(dest)
 
 
-            dest = os.path.join(dest, self.name + '.' + ext)
+            dest = os.path.join(dest, sysname + '.' + ext)
 
             control.infoDialog(self.name + ' Is Downloading', 'Downloads Started', self.image, time=7000)
 
@@ -450,6 +477,5 @@ class downloadThread(threading.Thread):
         control.window.clearProperty(property + '.percent')
         control.window.clearProperty(property + '.speed')
         control.window.clearProperty(property + '.size')
-
-        control.execute('Container.Refresh')
+        control.refresh()
 

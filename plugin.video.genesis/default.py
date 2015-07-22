@@ -104,56 +104,151 @@ except:
 
 
 if action == None:
-    from modules.v4 import root
-    root().get()
+    from modules.indexers import genesis
+    genesis.navigator().root()
 
 elif action == 'root_movies':
-    from modules.v4 import root
-    root().movies()
+    from modules.indexers import genesis
+    genesis.navigator().movies()
 
 elif action == 'root_shows':
-    from modules.v4 import root
-    root().shows()
-
-elif action == 'root_calendar':
-    from modules.v4 import root
-    root().calendar()
+    from modules.indexers import genesis
+    genesis.navigator().tvshows()
 
 elif action == 'root_genesis':
-    from modules.v4 import root
-    root().genesis()
+    from modules.indexers import genesis
+    genesis.navigator().genesis()
+
+elif action == 'root_calendar':
+    from modules.indexers import genesis
+    genesis.navigator().calendar()
 
 elif action == 'root_tools':
-    from modules.v4 import root
-    root().tools()
-
-elif action == 'root_search':
-    from modules.v4 import root
-    root().search()
+    from modules.indexers import genesis
+    genesis.navigator().tools()
 
 elif action == 'root_library':
-    from modules.v4 import root
-    root().library()
+    from modules.indexers import genesis
+    genesis.navigator().library()
 
-elif action == 'cache_clear_list':
-    from modules.v4 import index
-    index().cache_clear_list()
+elif action == 'root_search':
+    from modules.indexers import genesis
+    genesis.navigator().search()
 
-elif action == 'cache_clear_src':
-    from modules.v4 import index
-    index().cache_clear_src()
+elif action == 'clearCache':
+    from modules.libraries import cache
+    cache.clear()
 
-elif action == 'container_refresh':
-    from modules.v4 import index
-    index().container_refresh()
+elif action == 'refresh':
+    from modules.libraries import control
+    control.refresh()
 
-elif action == 'item_queue':
-    from modules.v4 import contextMenu
-    contextMenu().item_queue()
+elif action == 'queueItem':
+    from modules.libraries import control
+    control.queueItem()
 
-elif action == 'playlist_open':
-    from modules.v4 import contextMenu
-    contextMenu().playlist_open()
+elif action == 'openPlaylist':
+    from modules.libraries import control
+    control.openPlaylist()
+
+elif action == 'openSettings':
+    from modules.libraries import control
+    control.openSettings()
+
+elif action == 'generalSettings':
+    from modules.libraries import control
+    control.openSettings(c=0, f=0)
+
+elif action == 'playbackSettings':
+    from modules.libraries import control
+    control.openSettings(c=1, f=0)
+
+elif action == 'movieSettings':
+    from modules.libraries import control
+    control.openSettings(c=2, f=0)
+
+elif action == 'tvSettings':
+    from modules.libraries import control
+    control.openSettings(c=3, f=0)
+
+elif action == 'hdhostSettings':
+    from modules.libraries import control
+    control.openSettings(c=4, f=0)
+
+elif action == 'sdhostSettings':
+    from modules.libraries import control
+    control.openSettings(c=5, f=0)
+
+elif action == 'accountSettings':
+    from modules.libraries import control
+    control.openSettings(c=6, f=1)
+
+elif action == 'librarySettings':
+    from modules.libraries import control
+    control.openSettings(c=7, f=0)
+
+elif action == 'downloadSettings':
+    from modules.libraries import control
+    control.openSettings(c=8, f=0)
+
+elif action == 'subtitleSettings':
+    from modules.libraries import control
+    control.openSettings(c=9, f=0)
+
+elif action == 'addView':
+    from modules.libraries import views
+    views.addView(content)
+
+elif action == 'downloader':
+    from modules.libraries import downloader
+    downloader.downloader()
+
+elif action == 'addDownload':
+    from modules.libraries import downloader
+    downloader.addDownload(name,url,image,provider)
+
+elif action == 'removeDownload':
+    from modules.libraries import downloader
+    downloader.removeDownload(url)
+
+elif action == 'startDownload':
+    from modules.libraries import downloader
+    downloader.startDownload()
+
+elif action == 'startDownloadThread':
+    from modules.libraries import downloader
+    downloader.startDownloadThread()
+
+elif action == 'stopDownload':
+    from modules.libraries import downloader
+    downloader.stopDownload()
+
+elif action == 'statusDownload':
+    from modules.libraries import downloader
+    downloader.statusDownload()
+
+elif action == 'trailer':
+    from modules.libraries import trailer
+    trailer.trailer().play(name, url)
+
+elif action == 'clearSources':
+    from modules.sources import sources
+    sources().clearSources()
+
+elif action == 'play':
+    from modules.sources import sources
+    sources().play(name, title, year, imdb, tvdb, season, episode, show, show_alt, date, genre, url)
+
+elif action == 'addPlayableItem':
+    from modules.sources import sources
+    sources().addPlayableItem(name, title, year, imdb, tvdb, season, episode, show, show_alt, date, genre, meta)
+
+elif action == 'playItem':
+    from modules.sources import sources
+    sources().playItem(content, name, imdb, tvdb, url, source, provider)
+
+
+
 
 elif action == 'favourite_movie_add':
     from modules.v4 import contextMenu
@@ -478,97 +573,4 @@ elif action == 'userlists_movies':
 elif action == 'userlists_shows':
     from modules.v4 import userlists
     userlists().shows()
-
-
-
-
-
-
-elif action == 'openSettings':
-    from modules.libraries.control import openSettings
-    openSettings()
-
-elif action == 'generalSettings':
-    from modules.libraries.control import openSettings
-    openSettings(c=0, f=0)
-
-elif action == 'playbackSettings':
-    from modules.libraries.control import openSettings
-    openSettings(c=1, f=0)
-
-elif action == 'movieSettings':
-    from modules.libraries.control import openSettings
-    openSettings(c=2, f=0)
-
-elif action == 'tvSettings':
-    from modules.libraries.control import openSettings
-    openSettings(c=3, f=0)
-
-elif action == 'hdhostSettings':
-    from modules.libraries.control import openSettings
-    openSettings(c=4, f=0)
-
-elif action == 'sdhostSettings':
-    from modules.libraries.control import openSettings
-    openSettings(c=5, f=0)
-
-elif action == 'accountSettings':
-    from modules.libraries.control import openSettings
-    openSettings(c=6, f=1)
-
-elif action == 'librarySettings':
-    from modules.libraries.control import openSettings
-    openSettings(c=7, f=0)
-
-elif action == 'downloadSettings':
-    from modules.libraries.control import openSettings
-    openSettings(c=8, f=0)
-
-elif action == 'subtitleSettings':
-    from modules.libraries.control import openSettings
-    openSettings(c=9, f=0)
-
-elif action == 'addView':
-    from modules.libraries.views import addView
-    addView(content)
-
-elif action == 'downloader':
-    from modules.libraries.downloader import downloader
-    downloader()
-
-elif action == 'addDownload':
-    from modules.libraries.downloader import addDownload
-    addDownload(name,url,image,provider)
-
-elif action == 'removeDownload':
-    from modules.libraries.downloader import removeDownload
-    removeDownload(url)
-
-elif action == 'startDownload':
-    from modules.libraries.downloader import startDownload
-    startDownload()
-
-elif action == 'stopDownload':
-    from modules.libraries.downloader import stopDownload
-    stopDownload()
-
-elif action == 'statusDownload':
-    from modules.libraries.downloader import statusDownload
-    statusDownload()
-
-elif action == 'trailer':
-    from modules.libraries.trailer import trailer
-    trailer().play(name, url)
-
-elif action == 'play':
-    from modules.sources import sources
-    sources().play(name, title, year, imdb, tvdb, season, episode, show, show_alt, date, genre, url)
-
-elif action == 'addPlayableItem':
-    from modules.sources import sources
-    sources().addPlayableItem(name, title, year, imdb, tvdb, season, episode, show, show_alt, date, genre, meta)
-
-elif action == 'playItem':
-    from modules.sources import sources
-    sources().playItem(content, name, imdb, tvdb, url, source, provider)
 

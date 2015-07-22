@@ -23,6 +23,7 @@ import re
 import os
 import zlib
 import base64
+import codecs
 import xmlrpclib
 import control
 import xbmc
@@ -30,15 +31,21 @@ import xbmc
 
 langDict = {'Afrikaans': 'afr', 'Albanian': 'alb', 'Arabic': 'ara', 'Armenian': 'arm', 'Basque': 'baq', 'Bengali': 'ben', 'Bosnian': 'bos', 'Breton': 'bre', 'Bulgarian': 'bul', 'Burmese': 'bur', 'Catalan': 'cat', 'Chinese': 'chi', 'Croatian': 'hrv', 'Czech': 'cze', 'Danish': 'dan', 'Dutch': 'dut', 'English': 'eng', 'Esperanto': 'epo', 'Estonian': 'est', 'Finnish': 'fin', 'French': 'fre', 'Galician': 'glg', 'Georgian': 'geo', 'German': 'ger', 'Greek': 'ell', 'Hebrew': 'heb', 'Hindi': 'hin', 'Hungarian': 'hun', 'Icelandic': 'ice', 'Indonesian': 'ind', 'Italian': 'ita', 'Japanese': 'jpn', 'Kazakh': 'kaz', 'Khmer': 'khm', 'Korean': 'kor', 'Latvian': 'lav', 'Lithuanian': 'lit', 'Luxembourgish': 'ltz', 'Macedonian': 'mac', 'Malay': 'may', 'Malayalam': 'mal', 'Manipuri': 'mni', 'Mongolian': 'mon', 'Montenegrin': 'mne', 'Norwegian': 'nor', 'Occitan': 'oci', 'Persian': 'per', 'Polish': 'pol', 'Portuguese': 'por,pob', 'Portuguese(Brazil)': 'pob,por', 'Romanian': 'rum', 'Russian': 'rus', 'Serbian': 'scc', 'Sinhalese': 'sin', 'Slovak': 'slo', 'Slovenian': 'slv', 'Spanish': 'spa', 'Swahili': 'swa', 'Swedish': 'swe', 'Syriac': 'syr', 'Tagalog': 'tgl', 'Tamil': 'tam', 'Telugu': 'tel', 'Thai': 'tha', 'Turkish': 'tur', 'Ukrainian': 'ukr', 'Urdu': 'urd'}
 
+codePageDict = {'ara': 'cp1256', 'ar': 'cp1256', 'ell': 'cp1253', 'el': 'cp1253', 'heb': 'cp1255', 'he': 'cp1255', 'tur': 'cp1254', 'tr': 'cp1254', 'rus': 'cp1251', 'ru': 'cp1251'}
+
 quality = ['bluray', 'hdrip', 'brrip', 'bdrip', 'dvdrip', 'webrip', 'hdtv']
 
 
 def get(name, imdb, season, episode):
     try:
         langs = []
-        try: langs.append(langDict[control.setting('sublang1')])
+        try:
+            try: langs = langDict[control.setting('sublang1')].split(',')
+            except: langs.append(langDict[control.setting('sublang1')])
         except: pass
-        try: langs.append(langDict[control.setting('sublang2')])
+        try:
+            try: langs = langs + langDict[control.setting('sublang2')].split(',')
+            except: langs.append(langDict[control.setting('sublang2')])
         except: pass
 
         try: subLang = xbmc.Player().getSubtitles()
@@ -75,11 +82,19 @@ def get(name, imdb, season, episode):
         content = [filter[0]['IDSubtitleFile'],]
         content = server.DownloadSubtitles(token, content)
         content = base64.b64decode(content['data'][0]['data'])
-        content = zlib.decompressobj(16+zlib.MAX_WBITS).decompress(content)
+        content = str(zlib.decompressobj(16+zlib.MAX_WBITS).decompress(content))
 
         subtitle = xbmc.translatePath('special://temp/')
         subtitle = os.path.join(subtitle, 'TemporarySubs.%s.srt' % lang)
-        
+
+        codepage = codePageDict.get(lang, '')
+        if codepage and control.setting('autoconvert_utf8') == 'true':
+            try:
+                content_encoded = codecs.decode(content, codepage)
+                content = codecs.encode(content_encoded, 'utf-8')
+            except:
+                pass
+
         file = control.openFile(subtitle, 'w')
         file.write(str(content))
         file.close()

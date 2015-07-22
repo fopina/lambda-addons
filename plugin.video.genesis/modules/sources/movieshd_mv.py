@@ -23,7 +23,9 @@ import re
 import urllib
 import urlparse
 from modules.libraries import cleantitle
+from modules.libraries import cloudflare
 from modules.libraries import client
+from modules.resolvers import openload
 from modules.resolvers import videomega
 
 
@@ -31,7 +33,6 @@ class source:
     def __init__(self):
         self.base_link = 'http://movieshd.co'
         self.search_link = '/?s=%s'
-        self.videomega_link = 'http://videomega.tv/cdn.php?ref=%s'
 
 
     def get_movie(self, imdb, title, year):
@@ -39,7 +40,7 @@ class source:
             query = self.search_link % (urllib.quote_plus(title))
             query = urlparse.urljoin(self.base_link, query)
 
-            result = client.source(query)
+            result = cloudflare.source(query)
             result = client.parseDOM(result, "ul", attrs = { "class": "listing-videos.+?" })[0]
             result = client.parseDOM(result, "li", attrs = { "class": ".+?" })
 
@@ -64,7 +65,7 @@ class source:
 
             if url == None: return sources
 
-            result = client.source(urlparse.urljoin(self.base_link, url))
+            result = cloudflare.source(urlparse.urljoin(self.base_link, url))
 
             quality = client.parseDOM(result, "title")[0]
             if '[CAM]' in quality or '[TS]' in quality: quality = 'CAM'
@@ -73,23 +74,24 @@ class source:
 
             result = client.parseDOM(result, "div", attrs = { "class": "video-embed" })[0]
 
-            url = None
+            try:
+                url = client.parseDOM(result, "iframe", ret="src")
+                url = [i for i in url if 'openload' in i.lower()][0]
+                url = openload.resolve(url)
+                if url == None: raise Exception()
+                sources.append({'source': 'Openload', 'quality': quality, 'provider': 'MoviesHD', 'url': url})
+            except:
+                pass
 
-            enigma = client.parseDOM(result, "span", ret="data-enigmav")
-            if len(enigma) > 0:
-                url = enigma[0].decode("unicode-escape")
-                url = re.compile('file *: *"(.+?)"').findall(url)[-1]
-                url += '|Referer=%s' % urllib.quote_plus(self.base_link)
-
-            mega = re.compile('hashkey=([\w]+)').findall(result)
-            mega += re.compile('ref=[\'|\"](.+?)[\'|\"]').findall(result)
-            if len(mega) > 0:
-                url = self.videomega_link % mega[0]
+            try:
+                url = re.compile('hashkey=([\w]+)').findall(result)
+                url += re.compile('ref=[\'|\"](.+?)[\'|\"]').findall(result)
+                url = 'http://videomega.tv/cdn.php?ref=%s' % url[0]
                 url = videomega.resolve(url)
-
-            if url == None: raise Exception()
-
-            sources.append({'source': 'Videomega', 'quality': quality, 'provider': 'MoviesHD', 'url': url})
+                if url == None: raise Exception()
+                sources.append({'source': 'Videomega', 'quality': quality, 'provider': 'MoviesHD', 'url': url})
+            except:
+                pass
 
             return sources
         except:

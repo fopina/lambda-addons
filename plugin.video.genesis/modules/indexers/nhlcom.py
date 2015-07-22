@@ -49,9 +49,9 @@ def nhlDirectory():
     items = json.loads(result)
     items = sorted(items, key=lambda k: k['est'])
 
-    addDirectoryItem('[COLOR red]Archived Games Click Here[/COLOR]', 'Archived', 'nhlArchives', '0', '0', isFolder=True)
-    addDirectoryItem('[COLOR gold]Live Games , Requires some modifications to get working visit forum.[/COLOR]', '0', '0', '0', '0', isFolder=False)
-    addDirectoryItem('[COLOR gold]If list returns BLANK, Feed is not up yet.[/COLOR]', '0', '0', '0', '0', isFolder=False)
+    addDirectoryItem('[COLOR red]Archived Games Click Here[/COLOR]', 'Archived', 'nhlArchives', '0', '0')
+    addDirectoryItem('[COLOR gold]Live Games , Requires some modifications to get working visit forum.[/COLOR]', '0', '0', '0', '0')
+    addDirectoryItem('[COLOR gold]If list returns BLANK, Feed is not up yet.[/COLOR]', '0', '0', '0', '0')
 
     for item in items:
         try:
@@ -63,7 +63,7 @@ def nhlDirectory():
             name = '%s at %s  [COLOR gold](%s)[/COLOR]  [COLOR red](%s)[/COLOR]' % (item['a'], item['h'], est.strftime('%H:%M'), est.strftime('%Y-%m-%d'))
             url = str(item['id'])
 
-            addDirectoryItem(name, url, 'nhlStreams', '0', '0', isFolder=True)
+            addDirectoryItem(name, url, 'nhlStreams', '0', '0')
         except:
             pass
 
@@ -91,7 +91,7 @@ def nhlArchives():
             name = '%s at %s  [COLOR gold](%s)[/COLOR]  [COLOR red](%s)[/COLOR]' % (item['a'], item['h'], est.strftime('%H:%M'), est.strftime('%Y-%m-%d'))
             url = str(item['id'])
 
-            addDirectoryItem(name, url, 'nhlStreams', '0', '0', isFolder=True)
+            addDirectoryItem(name, url, 'nhlStreams', '0', '0')
         except:
             pass
 

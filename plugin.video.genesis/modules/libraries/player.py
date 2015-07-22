@@ -93,7 +93,7 @@ class player(xbmc.Player):
                 if self.offset == '0': raise Exception()
 
                 minutes, seconds = divmod(float(self.offset), 60) ; hours, minutes = divmod(minutes, 60)
-                yes = control.yesnoDialog('%s %02d:%02d:%02d' % (control.lang(30342).encode('utf-8'), hours, minutes, seconds), '', self.name, control.lang(30343).encode('utf-8'), control.lang(30344).encode('utf-8'))
+                yes = control.yesnoDialog('%s %02d:%02d:%02d' % (control.lang(30342).encode('utf-8'), hours, minutes, seconds), '', '', self.name, control.lang(30343).encode('utf-8'), control.lang(30344).encode('utf-8'))
 
                 if yes: self.offset = '0'
         except:
@@ -146,7 +146,7 @@ class player(xbmc.Player):
         if self.content == 'movie':
             try:
                 xbmc.executeJSONRPC('{"jsonrpc": "2.0", "method": "VideoLibrary.SetMovieDetails", "params": {"movieid" : %s, "playcount" : 1 }, "id": 1 }' % str(self.DBID))
-                if not self.folderPath.startswith('plugin://'): control.execute('Container.Refresh')
+                if not self.folderPath.startswith('plugin://'): control.refresh()
             except:
                 pass
 
@@ -168,7 +168,7 @@ class player(xbmc.Player):
         elif self.content == 'episode':
             try:
                 xbmc.executeJSONRPC('{"jsonrpc": "2.0", "method": "VideoLibrary.SetEpisodeDetails", "params": {"episodeid" : %s, "playcount" : 1 }, "id": 1 }' % str(self.DBID))
-                if not self.folderPath.startswith('plugin://'): control.execute('Container.Refresh')
+                if not self.folderPath.startswith('plugin://'): control.refresh()
             except:
                 pass
 

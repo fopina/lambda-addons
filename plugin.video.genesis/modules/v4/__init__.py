@@ -220,9 +220,9 @@ class index:
 
             response = eval(match[2].encode('utf-8'))
 
-            t1 = int(re.sub('[^0-9]', '', str(match[3])))
-            t2 = int(datetime.datetime.now().strftime("%Y%m%d%H%M"))
-            update = abs(t2 - t1) >= int(timeout*60)
+            t1 = int(match[3])
+            t2 = int(time.time())
+            update = (abs(t2 - t1) / 3600) >= int(timeout)
             if update == False:
                 return response
         except:
@@ -239,7 +239,7 @@ class index:
 
         try:
             r = repr(r)
-            t = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+            t = int(time.time())
             dbcur.execute("CREATE TABLE IF NOT EXISTS rel_list (""func TEXT, ""args TEXT, ""response TEXT, ""added TEXT, ""UNIQUE(func, args)"");")
             dbcur.execute("DELETE FROM rel_list WHERE func = '%s' AND args = '%s'" % (f, a))
             dbcur.execute("INSERT INTO rel_list Values (?, ?, ?, ?)", (f, a, r, t))
@@ -249,39 +249,6 @@ class index:
 
         try:
             return eval(r.encode('utf-8'))
-        except:
-            pass
-
-    def cache_clear_list(self):
-        try:
-            yes = index().yesnoDialog(language(30341).encode("utf-8"), '')
-            if not yes: return
-
-            dbcon = database.connect(addonCache)
-            dbcur = dbcon.cursor()
-            dbcur.execute("DROP TABLE IF EXISTS rel_list")
-            dbcur.execute("VACUUM")
-            dbcon.commit()
-            dbcur.execute("DROP TABLE IF EXISTS rel_lib")
-            dbcur.execute("VACUUM")
-            dbcon.commit()
-
-            index().infoDialog(language(30306).encode("utf-8"))
-        except:
-            pass
-
-    def cache_clear_src(self):
-        try:
-            yes = index().yesnoDialog(language(30341).encode("utf-8"), '')
-            if not yes: return
-
-            dbcon = database.connect(addonSources)
-            dbcur = dbcon.cursor()
-            dbcur.execute("DROP TABLE IF EXISTS rel_src")
-            dbcur.execute("VACUUM")
-            dbcon.commit()
-
-            index().infoDialog(language(30306).encode("utf-8"))
         except:
             pass
 
@@ -358,7 +325,7 @@ class index:
 
                 if root == 'movies_search' or root == 'shows_search' or root == 'people_movies' or root == 'people_shows':
                     cm.append((language(30410).encode("utf-8"), 'RunPlugin(%s?action=openSettings)' % (sys.argv[0])))
-                    cm.append((language(30411).encode("utf-8"), 'RunPlugin(%s?action=playlist_open)' % (sys.argv[0])))
+                    cm.append((language(30411).encode("utf-8"), 'RunPlugin(%s?action=openPlaylist)' % (sys.argv[0])))
                     replaceItems = True
 
                 item = xbmcgui.ListItem(name, iconImage="DefaultFolder.png", thumbnailImage=image)
@@ -609,7 +576,7 @@ class index:
 
                 cm = []
                 if video_type == 'true':
-                    cm.append((language(30401).encode("utf-8"), 'RunPlugin(%s?action=item_queue)' % (sys.argv[0])))
+                    cm.append((language(30401).encode("utf-8"), 'RunPlugin(%s?action=queueItem)' % (sys.argv[0])))
                 if not (getSetting("trakt_user") == '' or getSetting("trakt_password") == ''):
                     cm.append((language(30419).encode("utf-8"), 'RunPlugin(%s?action=trakt_tv_manager&name=%s&tvdb=%s)' % (sys.argv[0], systitle, systvdb)))
                 if action == 'shows_favourites':
@@ -698,7 +665,7 @@ class index:
 
                 cm = []
                 if video_type == 'true':
-                    cm.append((language(30401).encode("utf-8"), 'RunPlugin(%s?action=item_queue)' % (sys.argv[0])))
+                    cm.append((language(30401).encode("utf-8"), 'RunPlugin(%s?action=queueItem)' % (sys.argv[0])))
                 if not (getSetting("trakt_user") == '' or getSetting("trakt_password") == ''):
                     cm.append((language(30419).encode("utf-8"), 'RunPlugin(%s?action=trakt_tv_manager&name=%s&tvdb=%s)' % (sys.argv[0], sysshow, systvdb)))
                 if not imdb in favourites: cm.append((language(30405).encode("utf-8"), 'RunPlugin(%s?action=favourite_tv_add&imdb=%s&name=%s&year=%s&image=%s)' % (sys.argv[0], sysimdb, sysshow, sysyear, sysimage)))
@@ -825,7 +792,7 @@ class index:
                 cm = []
                 cm.append((playbackMenu, 'RunPlugin(%s?action=toggle_episode_playback&name=%s&title=%s&year=%s&imdb=%s&tvdb=%s&season=%s&episode=%s&show=%s&show_alt=%s&date=%s&genre=%s)' % (sys.argv[0], sysname, systitle, sysyear, sysimdb, systvdb, sysseason, sysepisode, sysshow, sysshow_alt, sysdate, sysgenre)))
                 if video_type == 'true':
-                    cm.append((language(30401).encode("utf-8"), 'RunPlugin(%s?action=item_queue)' % (sys.argv[0])))
+                    cm.append((language(30401).encode("utf-8"), 'RunPlugin(%s?action=queueItem)' % (sys.argv[0])))
                 if not (getSetting("trakt_user") == '' or getSetting("trakt_password") == ''):
                     cm.append((language(30419).encode("utf-8"), 'RunPlugin(%s?action=trakt_tv_manager&name=%s&tvdb=%s)' % (sys.argv[0], sysshow, systvdb)))
                 if not imdb in favourites: cm.append((language(30405).encode("utf-8"), 'RunPlugin(%s?action=favourite_tv_add&imdb=%s&name=%s&year=%s&image=%s)' % (sys.argv[0], sysimdb, sysshow, sysyear, sysimage)))
@@ -858,12 +825,6 @@ class index:
         setView('episodes', {'skin.confluence' : 504})
 
 class contextMenu:
-    def item_queue(self):
-        xbmc.executebuiltin('Action(Queue)')
-
-    def playlist_open(self):
-        xbmc.executebuiltin('ActivateWindow(VideoPlaylist)')
-
     def favourite_add(self, type, imdb, name, year, image, refresh=False):
         try:
             record = ('tt' + imdb, type, repr(name), year, '', '', image, '', '', '', '', '', '', '', '', '', '', '', '', '')
@@ -1098,7 +1059,17 @@ class contextMenu:
             xbmc.executebuiltin('UpdateLibrary(video)')
 
     def library_movie_list(self, url):
+        yes = index().yesnoDialog(language(30341).encode("utf-8"), '')
+        if not yes: return
+
         index().infoDialog(language(30315).encode("utf-8"), language(30311).encode("utf-8"), time=10000000)
+
+        if url == 'trakt_collection':
+            url = link().trakt_collection % link().trakt_user
+        elif url == 'trakt_watchlist':
+            url = link().trakt_watchlist % link().trakt_user
+        elif url == 'imdb_watchlist':
+            url = link().imdb_watchlist % link().imdb_user
 
         try:
             match = index().cache(movies().get, 0, url, False)
@@ -1121,16 +1092,6 @@ class contextMenu:
             xbmc.executebuiltin('UpdateLibrary(video)')
 
     def library_movie_tool(self, url):
-        yes = index().yesnoDialog(language(30341).encode("utf-8"), '')
-        if not yes: return
-
-        if url == 'trakt_collection':
-            url = link().trakt_collection % link().trakt_user
-        elif url == 'trakt_watchlist':
-            url = link().trakt_watchlist % link().trakt_user
-        elif url == 'imdb_watchlist':
-            url = link().imdb_watchlist % link().imdb_user
-
         xbmc.executebuiltin('RunPlugin(%s?action=library_movie_list&url=%s)' % (sys.argv[0], urllib.quote_plus(url)))
 
     def library_movie_strm(self, i):
@@ -1150,7 +1111,7 @@ class contextMenu:
             except: pass
             try:
 				if not 'ftp://' in folder: raise Exception()
-				from ftplib import FTP		
+				from ftplib import FTP
 				ftparg = re.compile('ftp://(.+?):(.+?)@(.+?):?(\d+)?/(.+/?)').findall(folder)
 				ftp = FTP(ftparg[0][2],ftparg[0][0],ftparg[0][1])
 				try: ftp.cwd(ftparg[0][4])
@@ -1236,7 +1197,17 @@ class contextMenu:
             xbmc.executebuiltin('UpdateLibrary(video)')
 
     def library_tv_list(self, url):
+        yes = index().yesnoDialog(language(30341).encode("utf-8"), '')
+        if not yes: return
+
         index().infoDialog(language(30315).encode("utf-8"), language(30312).encode("utf-8"), time=10000000)
+
+        if url == 'trakt_tv_collection':
+            url = link().trakt_tv_collection % link().trakt_user
+        elif url == 'trakt_tv_watchlist':
+            url = link().trakt_tv_watchlist % link().trakt_user
+        elif url == 'imdb_tv_watchlist':
+            url = link().imdb_watchlist % link().imdb_user
 
         try:
             match = index().cache(shows().get, 0, url, False)
@@ -1258,16 +1229,6 @@ class contextMenu:
             xbmc.executebuiltin('UpdateLibrary(video)')
 
     def library_tv_tool(self, url):
-        yes = index().yesnoDialog(language(30341).encode("utf-8"), '')
-        if not yes: return
-
-        if url == 'trakt_tv_collection':
-            url = link().trakt_tv_collection % link().trakt_user
-        elif url == 'trakt_tv_watchlist':
-            url = link().trakt_tv_watchlist % link().trakt_user
-        elif url == 'imdb_tv_watchlist':
-            url = link().imdb_watchlist % link().imdb_user
-
         xbmc.executebuiltin('RunPlugin(%s?action=library_tv_list&url=%s)' % (sys.argv[0], urllib.quote_plus(url)))
 
     def library_tv_strm(self, i):
@@ -1538,150 +1499,6 @@ class contextMenu:
         xbmc.Player().play(u, item)
 
 
-class root:
-    def get(self):
-        rootList = []
-        rootList.append({'name': 30501, 'image': 'root_movies.jpg', 'action': 'root_movies'})
-        rootList.append({'name': 30502, 'image': 'root_shows.jpg', 'action': 'root_shows'})
-        rootList.append({'name': 30503, 'image': 'channels_movies.jpg', 'action': 'channels_movies'})
-        rootList.append({'name': 30504, 'image': 'root_genesis.jpg', 'action': 'root_genesis'})
-
-        root_movies = getSetting("root_movies")
-        if root_movies == '1':
-            rootList.append({'name': 30505, 'image': 'movies_added.jpg', 'action': 'movies_featured'})
-        elif root_movies == '2':
-            rootList.append({'name': 30505, 'image': 'movies_added.jpg', 'action': 'movies_added_hd'})
-        elif root_movies == '3':
-            rootList.append({'name': 30505, 'image': 'movies_added.jpg', 'action': 'movies_added'})
-
-        if not (link().trakt_user == '' or link().trakt_password == ''):
-            root_episodes = getSetting("root_episodes_trakt")
-        else:
-            root_episodes = getSetting("root_episodes")
-        if root_episodes == '1':
-            rootList.append({'name': 30506, 'image': 'episodes_added.jpg', 'action': 'episodes_added'})
-        elif root_episodes == '2':
-            rootList.append({'name': 30506, 'image': 'episodes_added.jpg', 'action': 'episodes_trakt_progress'})
-        elif root_episodes == '3':
-            rootList.append({'name': 30506, 'image': 'episodes_added.jpg', 'action': 'episodes_trakt'})
-
-        root_calendar = getSetting("root_calendar")
-        if root_calendar == '1':
-            rootList.append({'name': 30507, 'image': 'root_calendar.jpg', 'action': 'root_calendar'})
-
-        rootList.append({'name': 30508, 'image': 'root_tools.jpg', 'action': 'root_tools'})
-
-        if not getSetting("downloadPath") == '':
-            rootList.append({'name': 30140, 'image': 'downloader.jpg', 'action': 'downloader'})
-
-        rootList.append({'name': 30509, 'image': 'root_search.jpg', 'action': 'root_search'})
-        index().rootList(rootList)
-
-    def movies(self):
-        rootList = []
-        rootList.append({'name': 30521, 'image': 'genres_movies.jpg', 'action': 'genres_movies'})
-        rootList.append({'name': 30522, 'image': 'languages_movies.jpg', 'action': 'languages_movies'})
-        rootList.append({'name': 30523, 'image': 'certificates_movies.jpg', 'action': 'certificates_movies'})
-        rootList.append({'name': 30524, 'image': 'movies_boxoffice.jpg', 'action': 'movies_boxoffice'})
-        rootList.append({'name': 30525, 'image': 'years_movies.jpg', 'action': 'years_movies'})
-        rootList.append({'name': 30526, 'image': 'movies_trending.jpg', 'action': 'movies_trending'})
-        rootList.append({'name': 30527, 'image': 'movies_popular.jpg', 'action': 'movies_popular'})
-        rootList.append({'name': 30528, 'image': 'movies_views.jpg', 'action': 'movies_views'})
-        rootList.append({'name': 30529, 'image': 'movies_oscars.jpg', 'action': 'movies_oscars'})
-        rootList.append({'name': 30530, 'image': 'movies_theaters.jpg', 'action': 'movies_theaters'})
-        rootList.append({'name': 30531, 'image': 'movies_added_hd.jpg', 'action': 'movies_added_hd'})
-        rootList.append({'name': 30532, 'image': 'movies_added.jpg', 'action': 'movies_added'})
-        rootList.append({'name': 30533, 'image': 'movies_favourites.jpg', 'action': 'movies_favourites'})
-        rootList.append({'name': 30534, 'image': 'people_movies.jpg', 'action': 'people_movies'})
-        rootList.append({'name': 30535, 'image': 'movies_search.jpg', 'action': 'movies_search'})
-        index().rootList(rootList)
-
-    def shows(self):
-        rootList = []
-        rootList.append({'name': 30541, 'image': 'genres_shows.jpg', 'action': 'genres_shows'})
-        rootList.append({'name': 30542, 'image': 'certificates_shows.jpg', 'action': 'certificates_shows'})
-        rootList.append({'name': 30543, 'image': 'shows_popular.jpg', 'action': 'shows_popular'})
-        rootList.append({'name': 30544, 'image': 'shows_active.jpg', 'action': 'shows_active'})
-        rootList.append({'name': 30545, 'image': 'shows_trending.jpg', 'action': 'shows_trending'})
-        rootList.append({'name': 30546, 'image': 'shows_rating.jpg', 'action': 'shows_rating'})
-        rootList.append({'name': 30547, 'image': 'shows_views.jpg', 'action': 'shows_views'})
-        rootList.append({'name': 30548, 'image': 'episodes_added.jpg', 'action': 'episodes_added'})
-        rootList.append({'name': 30549, 'image': 'root_calendar.jpg', 'action': 'root_calendar'})
-        rootList.append({'name': 30550, 'image': 'shows_favourites.jpg', 'action': 'shows_favourites'})
-        rootList.append({'name': 30551, 'image': 'people_shows.jpg', 'action': 'people_shows'})
-        rootList.append({'name': 30552, 'image': 'shows_search.jpg', 'action': 'shows_search'})
-        index().rootList(rootList)
-
-    def calendar(self):
-        rootList = []
-        rootList.append({'name': 30561, 'image': 'root_calendar.jpg', 'action': 'episodes_calendar_1'})
-        rootList.append({'name': 30562, 'image': 'root_calendar.jpg', 'action': 'episodes_calendar_2'})
-        rootList.append({'name': 30563, 'image': 'root_calendar.jpg', 'action': 'episodes_calendar_3'})
-        rootList.append({'name': 30564, 'image': 'root_calendar.jpg', 'action': 'episodes_calendar_4'})
-        rootList.append({'name': 30565, 'image': 'root_calendar.jpg', 'action': 'shows_season_premieres'})
-        rootList.append({'name': 30566, 'image': 'root_calendar.jpg', 'action': 'shows_premieres'})
-        index().rootList(rootList)
-
-    def genesis(self):
-        rootList = []
-        if not (link().trakt_user == '' or link().trakt_password == ''):
-            rootList.append({'name': 30581, 'image': 'movies_trakt_collection.jpg', 'action': 'movies_trakt_collection'})
-            rootList.append({'name': 30582, 'image': 'shows_trakt_collection.jpg', 'action': 'shows_trakt_collection'})
-            rootList.append({'name': 30583, 'image': 'movies_trakt_watchlist.jpg', 'action': 'movies_trakt_watchlist'})
-            rootList.append({'name': 30584, 'image': 'shows_trakt_watchlist.jpg', 'action': 'shows_trakt_watchlist'})
-            rootList.append({'name': 30585, 'image': 'episodes_trakt_progress.jpg', 'action': 'episodes_trakt_progress'})
-            rootList.append({'name': 30586, 'image': 'episodes_trakt.jpg', 'action': 'episodes_trakt'})
-        if not (link().imdb_user == ''):
-            rootList.append({'name': 30587, 'image': 'movies_imdb_watchlist.jpg', 'action': 'movies_imdb_watchlist'})
-            rootList.append({'name': 30588, 'image': 'shows_imdb_watchlist.jpg', 'action': 'shows_imdb_watchlist'})
-        if not (link().trakt_user == '' or link().trakt_password == '') or not (link().imdb_user == ''):
-            rootList.append({'name': 30589, 'image': 'userlists_movies.jpg', 'action': 'userlists_movies'})
-            rootList.append({'name': 30590, 'image': 'userlists_shows.jpg', 'action': 'userlists_shows'})
-        rootList.append({'name': 30591, 'image': 'movies_favourites.jpg', 'action': 'movies_favourites'})
-        rootList.append({'name': 30592, 'image': 'shows_favourites.jpg', 'action': 'shows_favourites'})
-        index().rootList(rootList)
-
-    def search(self):
-        rootList = []
-        rootList.append({'name': 30601, 'image': 'movies_search.jpg', 'action': 'movies_search'})
-        rootList.append({'name': 30602, 'image': 'shows_search.jpg', 'action': 'shows_search'})
-        rootList.append({'name': 30603, 'image': 'people_movies.jpg', 'action': 'people_movies'})
-        rootList.append({'name': 30604, 'image': 'people_shows.jpg', 'action': 'people_shows'})
-        index().rootList(rootList)
-
-    def tools(self):
-        rootList = []
-        rootList.append({'name': 30621, 'image': 'settings.jpg', 'action': 'generalSettings'})
-        rootList.append({'name': 30622, 'image': 'settings.jpg', 'action': 'accountSettings'})
-        rootList.append({'name': 30623, 'image': 'settings.jpg', 'action': 'playbackSettings'})
-        rootList.append({'name': 30624, 'image': 'settings.jpg', 'action': 'subtitleSettings'})
-        rootList.append({'name': 30625, 'image': 'settings.jpg', 'action': 'movieSettings'})
-        rootList.append({'name': 30626, 'image': 'settings.jpg', 'action': 'tvSettings'})
-        rootList.append({'name': 30627, 'image': 'settings.jpg', 'action': 'hdhostSettings'})
-        rootList.append({'name': 30628, 'image': 'settings.jpg', 'action': 'sdhostSettings'})
-        rootList.append({'name': 30629, 'image': 'cache_clear.jpg', 'action': 'cache_clear_src'})
-        rootList.append({'name': 30630, 'image': 'cache_clear.jpg', 'action': 'cache_clear_list'})
-        rootList.append({'name': 30631, 'image': 'settings.jpg', 'action': 'downloadSettings'})
-        rootList.append({'name': 30632, 'image': 'root_library.jpg', 'action': 'root_library'})
-        index().rootList(rootList)
-
-    def library(self):
-        rootList = []
-        rootList.append({'name': 30640, 'image': 'settings.jpg', 'action': 'librarySettings'})
-        rootList.append({'name': 30641, 'image': 'library_update.jpg', 'action': 'library_update_tool'})
-        rootList.append({'name': 30642, 'image': 'library_movies.jpg', 'action': 'library_movies'})
-        rootList.append({'name': 30643, 'image': 'library_shows.jpg', 'action': 'library_shows'})
-        if not (link().trakt_user == '' or link().trakt_password == ''):
-            rootList.append({'name': 30644, 'image': 'movies_trakt_collection.jpg', 'action': 'library_trakt_collection'})
-            rootList.append({'name': 30645, 'image': 'shows_trakt_collection.jpg', 'action': 'library_tv_trakt_collection'})
-            rootList.append({'name': 30646, 'image': 'movies_trakt_watchlist.jpg', 'action': 'library_trakt_watchlist'})
-            rootList.append({'name': 30647, 'image': 'shows_trakt_watchlist.jpg', 'action': 'library_tv_trakt_watchlist'})
-        if not (link().imdb_user == ''):
-            rootList.append({'name': 30648, 'image': 'movies_imdb_watchlist.jpg', 'action': 'library_imdb_watchlist'})
-            rootList.append({'name': 30649, 'image': 'shows_imdb_watchlist.jpg', 'action': 'library_tv_imdb_watchlist'})
-        index().rootList(rootList)
-
-
 class link:
     def __init__(self):
         self.imdb_base = 'http://www.imdb.com'
@@ -1694,6 +1511,7 @@ class link:
         self.imdb_seasons = 'http://www.imdb.com/title/tt%s/episodes'
         self.imdb_episodes = 'http://www.imdb.com/title/tt%s/episodes?season=%s'
         self.imdb_genres = 'http://www.imdb.com/search/title?title_type=feature,tv_movie&sort=boxoffice_gross_us&count=25&start=1&genres=%s'
+        self.imdb_genres_type = 'http://www.imdb.com/search/title?title_type=%s&sort=num_votes,desc&count=25&start=1'
         self.imdb_certificates = 'http://www.imdb.com/search/title?title_type=feature,tv_movie&sort=boxoffice_gross_us&count=25&start=1&certificates=us:%s'
         self.imdb_languages = 'http://www.imdb.com/search/title?languages=%s|1&title_type=feature,tv_movie&sort=moviemeter,asc&count=25&start=1'
         self.imdb_years = 'http://www.imdb.com/search/title?title_type=feature,tv_movie&sort=boxoffice_gross_us&count=25&start=1&year=%s,%s'
@@ -1866,8 +1684,8 @@ class genres:
 
                 url = common.parseDOM(genre, "a", ret="href")[0]
                 url = re.compile('/genre/(.+?)/').findall(url)[0]
-                if url == 'documentary': raise Exception()
-                url = link().imdb_genres % url
+                if 'documentary' == url: url = link().imdb_genres_type % url
+                else: url = link().imdb_genres % url
                 url = common.replaceHTMLCodes(url)
                 url = url.encode('utf-8')
 

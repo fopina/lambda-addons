@@ -22,6 +22,7 @@
 import re
 import urllib
 import urlparse
+import json
 from modules.libraries import cleantitle
 from modules.libraries import sucuri
 from modules.libraries import client
@@ -30,7 +31,8 @@ from modules.libraries import client
 class source:
     def __init__(self):
         self.base_link = 'http://pubfilm.com'
-        self.search_link = '/?s=%s'
+        self.base_link = client.source(self.base_link, output='geturl')
+        self.search_link = '/feeds/posts/summary?alt=json&q=%s&max-results=100&callback=showResult'
 
 
     def get_movie(self, imdb, title, year):
@@ -39,19 +41,19 @@ class source:
             query = urlparse.urljoin(self.base_link, query)
 
             result = sucuri.source(query)
-
-            result = client.parseDOM(result, "article", attrs = { "class": "item-list" })
+            result = re.compile('showResult\((.*)\)').findall(result)[0]
+            result = json.loads(result)
+            result = result['feed']['entry']
 
             title = cleantitle.movie(title)
             years = ['%s' % str(year), '%s' % str(int(year)+1), '%s' % str(int(year)-1)]
 
-            result = [(client.parseDOM(i, "a", ret="href"), client.parseDOM(i, "h3", attrs = { "class": "post-box-title" }), client.parseDOM(i, "div", attrs = { "class": "f_tag" })) for i in result]
-
-            result = [(i[0][0], i[1][0], i[2][0]) for i in result if len(i[0]) > 0 and len(i[1]) > 0 and len(i[2]) > 0]
-            result = [(i[0], client.parseDOM(i[1], "a")[0], i[2].strip()) for i in result if len(i[1]) > 0]
-            result = [(i[0], i[1]) for i in result if not 'TS' in i[2] and not 'CAM' in i[2]]
-            result = [(i[0], re.compile('(.+?) (\d{4})$').findall(i[1])) for i in result]
-            result = [(i[0], i[1][0][0], i[1][0][1]) for i in result if len(i[1]) > 0]
+            result = [i for i in result if 'movies' in [x['term'].lower() for x in i['category']]]
+            result = [[x for x in i['link'] if x['rel'] == 'alternate' and x['type'] == 'text/html'][0] for i in result]
+            result = [(i['href'], i['title']) for i in result]
+            result = [(i[0], re.compile('(.+?) (\d{4})(.+)').findall(i[1])) for i in result]
+            result = [(i[0], i[1][0][0], i[1][0][1], i[1][0][2]) for i in result if len(i[1]) > 0]
+            result = [(i[0], i[1], i[2]) for i in result if not 'TS' in i[3] and not 'CAM' in i[3]]
             result = [i for i in result if title == cleantitle.movie(i[1])]
             result = [i[0] for i in result if any(x in i[2] for x in years)][0]
 

@@ -111,17 +111,36 @@ def addonFanart():
     else: return os.path.join(addonPath, 'resources', 'art', appearance, 'fanart.jpg')
 
 
+def artPath():
+    appearance = setting('appearance').lower()
+    if appearance == '-': return None
+    elif appearance == '': return None
+    else: return os.path.join(addonPath, 'resources', 'art', appearance)
+
+
 def infoDialog(message, heading=addonInfo('name'), icon=addonIcon(), time=3000):
     try: dialog.notification(heading, message, icon, time, sound=False)
     except: execute("Notification(%s,%s, %s, %s)" % (heading, message, time, icon))
 
 
-def yesnoDialog(line1, line2, heading=addonInfo('name'), nolabel='', yeslabel=''):
-    return dialog.yesno(heading, line1, line2, '', nolabel, yeslabel)
+def yesnoDialog(line1, line2, line3, heading=addonInfo('name'), nolabel='', yeslabel=''):
+    return dialog.yesno(heading, line1, line2, line3, nolabel, yeslabel)
 
 
 def selectDialog(list, heading=addonInfo('name')):
     return dialog.select(heading, list)
+
+
+def refresh():
+    return execute('Container.Refresh')
+
+
+def queueItem():
+    return execute('Action(Queue)')
+
+
+def openPlaylist():
+    return execute('ActivateWindow(VideoPlaylist)')
 
 
 def openSettings(id=addonInfo('id'), c=None, f=None):

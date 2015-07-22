@@ -30,9 +30,9 @@ def request(url, timeout='30'):
     try:
         u = '%s://%s' % (urlparse.urlparse(url).scheme, urlparse.urlparse(url).netloc)
 
-        cookie = cache.get(cloudflare, 168, u, timeout)
+        cookie = cache.get(sucuri, 168, u, timeout)
         if cookie == None:
-            cookie = cache.get(cloudflare, 0, u, timeout)
+            cookie = cache.get(sucuri, 0, u, timeout)
 
         result = client.request(url, cookie=cookie, timeout=timeout)
         return result
@@ -44,7 +44,7 @@ def source(url, timeout='5'):
     return request(url, timeout)
 
 
-def cloudflare(url, timeout):
+def sucuri(url, timeout):
     try:
         result = client.request(url, timeout=timeout, error=True)
 

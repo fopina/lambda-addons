@@ -39,13 +39,16 @@ class trailer:
         self.youtube_watch = 'http://www.youtube.com/watch?v=%s'
 
 
-    def play(self, name, url):
-        url = self.worker(name, url)
-        if url == None: return
-        item = control.item(path=url)
-        item.setProperty('IsPlayable', 'true')
-        control.player.play(url, item)
+    def play(self, name, url=None):
+        try:
+            url = self.worker(name, url)
+            if url == None: return
 
+            item = control.item(path=url)
+            item.setProperty('IsPlayable', 'true')
+            control.player.play(url, item)
+        except:
+            pass
 
     def worker(self, name, url):
         try:

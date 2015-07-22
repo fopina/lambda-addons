@@ -82,6 +82,7 @@
 	<string id="30163">Enable subtitles</string>
 	<string id="30164">Primary Language</string>
 	<string id="30165">Secondary Language</string>
+	<string id="30169">Convert subtitles to UTF-8</string>
 	<!-- Info -->
 	<string id="30301" />
 	<string id="30302">is on by default</string>

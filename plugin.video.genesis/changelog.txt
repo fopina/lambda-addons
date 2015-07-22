@@ -1,4 +1,23 @@
 ------------------------
+Genesis v4.8.4 (16-Jul-15)
+------------------------
+
+- Re-work of navigation.
+- Updated available sources.
+- Updated available resolvers.
+- Fixed Portuguese and Brazilian subtitle search (Mafarricos).
+- Added option for converting subtitles to UTF-8 (mitnits).
+- Added documentaries to genres section (ooXei1sh).
+- Tweaked cache timeout calculation (fopina).
+- Added Russian translation (mitnits).
+- Added confirmation in download manager.
+- Fixed naming issue in download manager.
+- Fixed issue with views detection.
+- Tweaked context menus.
+- Code cosmetics.
+
+
+------------------------
 Genesis v4.8.3 (9-Jul-15)
 ------------------------
 
