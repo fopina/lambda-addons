@@ -235,7 +235,7 @@ class TestSources(GenesisTestCase):
             'YIFYstream'
         )
 
-    def movie_source(self, source_name, imdb, title, year, expected_url, expected_provider):
+    def movie_source(self, source_name, imdb, title, year, expected_url, expected_provider, attempts=3):
         from modules.sources import sources
         from time import sleep
         hosts = sources()
@@ -243,17 +243,16 @@ class TestSources(GenesisTestCase):
         mod = __import__('modules.sources.' + source_name, fromlist=['source'])
         source = mod.source()
 
-        # some sources fail some times, so try at least
-        # 3 times before actual fail (3rd time's a charm)
-        attempt = 3
+        # some sources fail some times, so try at least _attempts_
+        # default is 3, as third time's a charm
         while True:
             try:
                 url = source.get_movie(imdb, title, year)
                 self.assertEqual(url, expected_url)
                 break
             except AssertionError:
-                attempt -= 1
-                if attempt < 1:
+                attempts -= 1
+                if attempts < 1:
                     raise
                 sleep(0.2)
 
