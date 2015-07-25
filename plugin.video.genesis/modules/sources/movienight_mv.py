@@ -24,14 +24,13 @@ import urllib
 import urlparse
 from modules.libraries import cleantitle
 from modules.libraries import client
+from modules.resolvers import filepup
 
 
 class source:
     def __init__(self):
-        self.base_link = 'https://m.sweflix.to'
-        self.agent_link = 'http://translate.googleusercontent.com/translate_c?anno=2&hl=en&sl=mt&tl=en&u='
-        self.search_link = '/index.php?show=query&q=%s'
-        self.player_link = '/view.php?vicloid=%s'
+        self.base_link = 'http://movienight.ws'
+        self.search_link = '/?s=%s'
 
 
     def get_movie(self, imdb, title, year):
@@ -40,20 +39,17 @@ class source:
             query = urlparse.urljoin(self.base_link, query)
 
             result = client.source(query)
-            if result == None: result = client.source(self.agent_link + urllib.quote_plus(query))
-
-            result = result.replace('\r','').replace('\n','').replace('\t','')
-
-            result = re.compile('(<div id="*\d*.+?</div>)').findall(result)
+            result = client.parseDOM(result, "div", attrs = { "class": "home_post_cont.+?" })
 
             title = cleantitle.movie(title)
-            years = ['%s' % str(year), '%s' % str(int(year)+1), '%s' % str(int(year)-1)]
+            years = ['(%s)' % str(year), '(%s)' % str(int(year)+1), '(%s)' % str(int(year)-1)]
 
-            result = [(re.compile('id="*(\d*)"*').findall(i), re.compile('<h4>(.+?)</h4>').findall(i), re.compile('Releasedatum *: *(\d{4})').findall(i)) for i in result]
-            result = [(i[0][0], i[1][0], i[2][0]) for i in result if len(i[0]) > 0 and len(i[1]) > 0 and len(i[2]) > 0]
-            result = [(i[0], i[1].rsplit('</span>')[0].split('>')[-1].strip(), i[2]) for i in result]
+            result = [(client.parseDOM(i, "a", ret="href")[0], client.parseDOM(i, "img", ret="title")[0]) for i in result]
+            result = [(i[0], client.replaceHTMLCodes(i[1])) for i in result]
+            result = [(i[0], client.parseDOM(i[1], "a")) for i in result]
+            result = [(i[0], i[1][0]) for i in result if len(i[1]) > 0]
             result = [i for i in result if title == cleantitle.movie(i[1])]
-            result = [i[0] for i in result if any(x in i[2] for x in years)][0]
+            result = [i[0] for i in result if any(x in i[1] for x in years)][0]
 
             try: url = re.compile('//.+?(/.+)').findall(result)[0]
             except: url = result
@@ -70,20 +66,25 @@ class source:
 
             if url == None: return sources
 
-            url = urlparse.urljoin(self.base_link, self.player_link % url)
+            url = urlparse.urljoin(self.base_link, url)
 
             result = client.source(url)
-            if result == None: result = client.source(self.agent_link + urllib.quote_plus(url))
 
-            result = result.replace('\r','').replace('\n','').replace('\t','')
+            quality = re.compile('Quality *: *(.+)').findall(result)
+            quality = 'SD' if len(quality) == 0 else quality[0]
+            quality = re.sub('<.+?>', '', quality).strip().upper()
 
-            result = re.compile('<source src="*(.+?)"* type="*video').findall(result)[0]
-            url = result.replace('sweflix.net', 'sweflix.%s' % (urlparse.urlparse(url).netloc).split('.')[-1])
+            if quality == 'SD': quality = 'SD'
+            elif quality == 'HD': quality = 'HD'
+            else: quality = 'CAM'
 
-            if '1080p' in url: quality = '1080p'
-            else: quality = 'HD'
+            url = client.parseDOM(result, "iframe", ret="src")
+            url = [i for i in url if 'filepup' in i][0]
+            url = filepup.resolve(url)
+            if url == None: raise Exception()
 
-            sources.append({'source': 'Sweflix', 'quality': quality, 'provider': 'Sweflix', 'url': url})
+            sources.append({'source': 'Filepup', 'quality': quality, 'provider': 'Movienight', 'url': url})
+
             return sources
         except:
             return sources

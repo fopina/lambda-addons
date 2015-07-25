@@ -3,6 +3,7 @@
 '''
     Genesis Add-on
     Copyright (C) 2015 lambda
+    Copyright (C) 2015 tknorris
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,31 +21,70 @@
 
 
 import re
+import sys
 import urllib
 import urlparse
 import json
+import time
+import random
+import hashlib
+import base64
 from modules.libraries import cleantitle
+from modules.libraries import pyaes
 from modules.libraries import client
+from modules.resolvers import googleplus
 
 
 class source:
     def __init__(self):
         self.base_link = 'http://www.gearscenter.com'
-        self.search_link = '/cartoon_control/gapi-202/?param_10=AIzaSyBsxsynyeeRczZJbxE8tZjnWl_3ALYmODs&param_7=2.0.2&param_8=com.appcenter.sharecartoon&os=android&versionCode=202&op_select=search_catalog&q=%s'
-        self.source_link = '/cartoon_control/gapi-202/?param_10=AIzaSyBsxsynyeeRczZJbxE8tZjnWl_3ALYmODs&param_7=2.0.2&param_8=com.appcenter.sharecartoon&os=android&versionCode=202&op_select=films&param_15=0&id_select=%s'
+        self.search_link = '/gold-server/gapiandroid205/?option=search&page=1&total=0&block=0&q=%s'
+        self.content_link = '/gold-server/gapiandroid205/?option=content&id=%s'
+        self.source_link = '/gold-server/gapiandroid205/?option=filmcontent&cataid=0&id=%s'
+        self.data_key = 'M2FiYWFkMjE2NDYzYjc0MQ=='
+        self.film_key = 'MmIyYTNkNTNkYzdiZjQyNw=='
+
+
+    def __extra(self):
+        ANDROID_LEVELS = {'22': '5.1', '21': '5.0', '19': '4.4.4', '18': '4.3.0', '17': '4.2.0', '16': '4.1.0', '15': '4.0.4', '14': '4.0.2', '13': '3.2.0'}
+        COUNTRIES = ['US', 'GB', 'CA', 'DK', 'MX', 'ES', 'JP', 'CN', 'DE', 'GR']
+        EXTRA_URL = ('&os=android&version=2.0.5&versioncode=205&param_1=F2EF57A9374977FD431ECAED984BA7A2&'
+             'deviceid=%s&param_3=7326c76a03066b39e2a0b1dc235c351c&param_4=%s'
+             '&param_5=%s&token=%s&time=%s&devicename=Google-Nexus-%s-%s')
+
+        now = str(int(time.time()))
+        build = random.choice(ANDROID_LEVELS.keys())
+        device_id = hashlib.md5(str(random.randint(0, sys.maxint))).hexdigest()
+        country = random.choice(COUNTRIES)
+        return EXTRA_URL % (device_id, country, country.lower(), hashlib.md5(now).hexdigest(), now, build, ANDROID_LEVELS[build])
+
+
+    def __decrypt(self, key, txt):
+        try:
+            key = base64.b64decode(key)
+            decrypter = pyaes.Decrypter(pyaes.AESModeOfOperationECB(key))
+            txt = base64.decodestring(txt)
+            txt = decrypter.feed(txt) + decrypter.feed()
+            return txt
+        except:
+            return
 
 
     def get_movie(self, imdb, title, year):
         try:
             query = urlparse.urljoin(self.base_link, self.search_link % (urllib.quote_plus(title)))
+            query += self.__extra()
 
             result = client.source(query)
+            result = json.loads(result)
+            result = self.__decrypt(self.data_key, result['data'])
             result = json.loads(result)
             result = result['categories']
 
             title = cleantitle.movie(title)
             years = ['(%s)' % str(year), '(%s)' % str(int(year)+1), '(%s)' % str(int(year)-1)]
-            result = [(i['catalog_id'], i['catalog_name'].encode('utf-8')) for i in result]
+            result = [(i['catalog_id'], i['catalog_name'].encode('utf-8'), str(i['type_film'])) for i in result]
+            result = [i for i in result if i[2] == '0']
             result = [i for i in result if title == cleantitle.movie(i[1])]
             result = [i[0] for i in result if any(x in i[1] for x in years)][0]
 
@@ -58,18 +98,20 @@ class source:
     def get_show(self, imdb, tvdb, show, show_alt, year):
         try:
             query = urlparse.urljoin(self.base_link, self.search_link % (urllib.quote_plus(show)))
+            query += self.__extra()
 
             result = client.source(query)
+            result = json.loads(result)
+            result = self.__decrypt(self.data_key, result['data'])
             result = json.loads(result)
             result = result['categories']
 
             shows = [cleantitle.tv(show), cleantitle.tv(show_alt)]
-            years = ['%s' % str(year), '%s' % str(int(year)+1), '%s' % str(int(year)-1)]
-            result = [(i['catalog_id'], i['catalog_name'].encode('utf-8')) for i in result]
-            result = [(i[0], re.compile('(.+?) [(](.+?)[)]$').findall(i[1])[0]) for i in result]
-            result = [(i[0], i[1][0], re.compile('(\d{4})').findall(i[1][1])[0]) for i in result]
+            years = ['(%s)' % str(year), '(%s)' % str(int(year)+1), '(%s)' % str(int(year)-1)]
+            result = [(i['catalog_id'], i['catalog_name'].encode('utf-8'), str(i['type_film'])) for i in result]
+            result = [i for i in result if i[2] == '1']
             result = [i for i in result if any(x == cleantitle.tv(i[1]) for x in shows)]
-            result = [i[0] for i in result if any(x in i[2] for x in years)][0]
+            result = [i[0] for i in result if any(x in i[1] for x in years)][0]
 
             url = str(result)
             url = url.encode('utf-8')
@@ -96,35 +138,44 @@ class source:
 
             if url == None: return sources
 
+            query = re.compile('(\d*)').findall(url)[0]
+            query = urlparse.urljoin(self.base_link, self.content_link % query)
+            query += self.__extra()
+
+            result = client.source(query)
+            result = json.loads(result)
+            result = self.__decrypt(self.data_key, result['data'])
+            result = json.loads(result)
+            result = result['listvideos']
+
             content = re.compile('(.+?)\sS\d*E\d*$').findall(url)
 
             if len(content) == 0:
-                query = urlparse.urljoin(self.base_link, self.source_link % url)
-
-                result = client.source(query)
-                result = json.loads(result)
-                result = result['films'][0]['film_link']
+                links = [i['film_id'] for i in result]
             else:
-                url, ep = re.compile('(.+?)\s(S\d*E\d*)$').findall(url)[0]
-                query = urlparse.urljoin(self.base_link, self.source_link % url)
+                ep = re.compile('.+?\s(S\d*E\d*)$').findall(url)[0]
+                links = [i['film_id'] for i in result if ep in i['film_name'].encode('utf-8').upper()]
 
-                result = client.source(query)
-                result = json.loads(result)
-                result = result['films']
-                result = [i['film_link'] for i in result if ep in i['film_name'].encode('utf-8').upper()][0]
+            for l in links[:3]:
+                try:
+                    url = urlparse.urljoin(self.base_link, self.source_link % l)
+                    url += self.__extra()
 
-            result = re.compile('(.+?)#(\d*)#').findall(result)
+                    url = client.source(url)
+                    url = json.loads(url)
 
-            try:
-                url = [i[0] for i in result if str(i[1]) == '1080'][0]
-                sources.append({'source': 'GVideo', 'quality': '1080p', 'provider': 'GVcenter', 'url': url})
-            except:
-                pass
-            try:
-                url = [i[0] for i in result if str(i[1]) == '720'][0]
-                sources.append({'source': 'GVideo', 'quality': 'HD', 'provider': 'GVcenter', 'url': url})
-            except:
-                pass
+                    url = self.__decrypt(self.data_key, url['data'])
+                    url = json.loads(url)['videos']
+                    url = [self.__decrypt(self.film_key, i['film_link']) for i in url]
+
+                    url = '#'.join(url)
+                    url = url.split('#')
+                    url = [i for i in url if 'http' in i and 'google' in i]
+                    url = [googleplus.tag(i)[0] for i in url]
+
+                    for i in url: sources.append({'source': 'GVideo', 'quality': i['quality'], 'provider': 'GVcenter', 'url': i['url']})
+                except:
+                    pass
 
             return sources
         except:

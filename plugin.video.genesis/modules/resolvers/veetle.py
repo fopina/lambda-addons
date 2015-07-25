@@ -21,19 +21,25 @@
 
 import re
 import urlparse
+import json
 from modules.libraries import client
 
 
 def resolve(url):
     try:
-        result = client.request(url, close=False)
+        channel = re.compile('[/v/|/view#]([\w]+)').findall(url)[-1]
 
-        f = client.parseDOM(result, "a", ret="href", attrs = { "id": "go-next" })[0]
-        f = urlparse.urljoin(url, f)
+        url = 'http://veetle.com/index.php/stream/ajaxStreamLocation/%s/android-hls' % channel
+        result = client.request(url, mobile=True)
+        url = json.loads(result)
 
-        result = client.request(f)
+        m3u8 = url['payload']
 
-        url = re.compile("var\s+lnk\d* *= *'(http.+?)'").findall(result)[0]
+        url = client.request(m3u8).splitlines()
+        url = [i for i in url if '.m3u8' in i]
+        if len(url) == 0: return m3u8
+        url = urlparse.urljoin(m3u8, url[0])
+
         return url
     except:
         return

@@ -22,12 +22,11 @@
 import re
 import urllib
 from modules.libraries import client
-from modules.libraries import jsunpack
 
 
 def resolve(url):
     try:
-        result = client.request(url)
+        result = client.request(url, close=False)
 
         post = {}
         f = client.parseDOM(result, "Form", attrs = { "method": "POST" })[0]
@@ -36,15 +35,16 @@ def resolve(url):
         post.update({'method_free': 'Continue to Video'})
         post = urllib.urlencode(post)
 
-        result = client.request(url, post=post)
+        result = client.request(url, post=post, close=False)
 
-        result = re.compile('(eval.*?\)\)\))').findall(result)[0]
+        js = re.compile('src *= *[\'|\"](.+?)[\'|\"]').findall(result)
+        js = [i for i in js if '/videojs/' in i][0]
 
-        url = jsunpack.unpack(result)
-        url = url.replace('/0/', '/xml/').replace('.0', '.xml')
+        result = client.request(js, close=False)
+        result = result.replace('\n','')
 
-        result = client.request(url)
-        url = client.parseDOM(result, "file")[0]
+        url = re.compile('sources *: *\[.+?\]').findall(result)[-1]
+        url = re.compile('file *: *[\'|\"](http.+?)[\'|\"]').findall(url)[0]
         return url
     except:
         return

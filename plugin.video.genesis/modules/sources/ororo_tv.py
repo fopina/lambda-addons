@@ -86,6 +86,10 @@ class source:
 
             if url == None: return sources
 
+            match = re.compile('(.+?)#(\d*)-(\d*)$').findall(url)
+            if len(match) > 0:
+                url = self.get_episode(match[0][0], '', '', '', '', match[0][1], match[0][2])
+
             url = urlparse.urljoin(self.base_link, url)
             sources.append({'source': 'Ororo', 'quality': 'SD', 'provider': 'Ororo', 'url': url})
             return sources

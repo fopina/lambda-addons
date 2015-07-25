@@ -20,20 +20,17 @@
 
 
 import re
-import urlparse
 from modules.libraries import client
 
 
 def resolve(url):
     try:
-        result = client.request(url, close=False)
+        url = re.compile('//.+?/.+?/([\w]+)').findall(url)[0]
+        url = 'http://www.filepup.net/play/%s' % url
 
-        f = client.parseDOM(result, "a", ret="href", attrs = { "id": "go-next" })[0]
-        f = urlparse.urljoin(url, f)
+        result = client.request(url)
 
-        result = client.request(f)
-
-        url = re.compile("var\s+lnk\d* *= *'(http.+?)'").findall(result)[0]
+        url = client.parseDOM(result, "source", ret="src", attrs = { "type": "video.+?" })[0]
         return url
     except:
         return

@@ -681,7 +681,7 @@ def endDirectory(content, close):
     if content in ['movies', 'tvshows', 'seasons', 'episodes']:
         control.content(int(sys.argv[1]), content)
 
-    if  close == True: control.directory(int(sys.argv[1]), cacheToDisc=True)
+    if close == True: control.directory(int(sys.argv[1]), cacheToDisc=True)
 
     if close == True and content in ['movies', 'tvshows', 'seasons', 'episodes']:
         views.setView(content)
