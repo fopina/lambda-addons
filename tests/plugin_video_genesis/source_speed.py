@@ -25,9 +25,9 @@ class SourceSpeedTest(test_movie_sources.TestSources):
         for x in cls.errors:
             print '\t%s: %s' % x
 
-    def movie_source(self, source_name, imdb, title, year, expected_url, expected_provider, attempts=3):
+    def movie_source(self, source_name, expected_provider):
         try:
-            t = timeit.timeit(functools.partial(super(SourceSpeedTest, self).movie_source, source_name, imdb, title, year, expected_url, expected_provider, attempts=1), number=1)
+            t = super(SourceSpeedTest, self).movie_source(source_name, expected_provider)
             SourceSpeedTest.times.append((t, source_name))
         except AssertionError as e:
             SourceSpeedTest.errors.append((source_name, e.message))
