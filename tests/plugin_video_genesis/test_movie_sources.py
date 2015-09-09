@@ -4,7 +4,7 @@ from genesistestcase import GenesisTestCase
 class TestSources(GenesisTestCase):
     longMessage = True
 
-    def atest_einthusan(self):
+    def test_einthusan_mv(self):
         self.skipTest("no hindi movie filter..")
         '''
         Sample data for static test:
@@ -16,11 +16,8 @@ class TestSources(GenesisTestCase):
             'Einthusan'
         '''
 
-    def atest_furk(self):
+    def test_furk_mv_tv(self):
         self.skipTest("needs login, private cloud")
-
-    def atest_moviestorm(self):
-        self.skipTest("needs to wait between search attempts...")
 
     def get_box_movies(self):
         if not getattr(self, 'movies', None):
@@ -79,7 +76,10 @@ def list_all_source_modules():
     # resources can be imported, but resources.lib.sources cannot
     import os
     import resources
-    exclude = []
+    exclude = [
+        'furk_mv_tv',
+        'einthusan_mv',
+    ]
     return [
         x[:-3]
         for x in os.listdir(resources.__path__[0] + '/lib/sources')
