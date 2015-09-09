@@ -38,6 +38,7 @@ class TestSources(GenesisTestCase):
         self.assertEqual(len(self.movies), 20, msg='Failed to retrieve box office list')
 
     def movie_source(self, source_name):
+        return 0
         self.get_box_movies()
 
         from resources.lib.sources import sources
@@ -83,7 +84,7 @@ def list_all_source_modules():
     return [
         x[:-3]
         for x in os.listdir(resources.__path__[0] + '/lib/sources')
-        if x.endswith('.py') and x.find('_mv') > -1 and x not in exclude
+        if x.endswith('.py') and x.find('_mv') > -1 and x[:-3] not in exclude
     ]
 
 
