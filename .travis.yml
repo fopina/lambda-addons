@@ -2,4 +2,4 @@ language: python
 python:
   - 2.7
 script:
-  - nosetests -vs
+  - nosetests -sv tests/plugin_video_genesis/source_speed.py
