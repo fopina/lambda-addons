@@ -1,4 +1,101 @@
 ------------------------
+Genesis v5.0.3 (8-Sep-15)
+------------------------
+
+- Added Megabox source.
+- Updated available sources.
+- NOTE: Ororo in some areas may need an account, create an account at http://ororo.tv
+- NOTE: Don't forget to add your account in the addon's settings.
+- Tweaked default timeout of sources to 15 seconds.
+- Updated available resolvers.
+- Code cosmetics.
+
+
+------------------------
+Genesis v5.0.2 (5-Sep-15)
+------------------------
+
+- Tweaked favourites.
+- Tweaked tv show search.
+- Tweaked movie and tv show listings.
+- Fixed issue with missing tv shows.
+- Fixed issue with season and episode listings.
+- Added Dutch and Hebrew translations.
+- Fixed Alluc source.
+- NOTE: Alluc requires an account, create an account at http://accounts.alluc.com
+- NOTE: Don't forget to add your account in the addon's settings.
+- Fixed Icefilms source.
+- NOTE: Icefilms source shows ice ads before playback starts.
+- NOTE: Don't forget that you can disable the source.
+- Updated available sources.
+- Code cosmetics.
+
+
+------------------------
+Genesis v5.0.1 (2-Sep-15)
+------------------------
+
+- Fixed issue with Trakt Progress.
+- Added Croatian, Greek and Portuguese translations.
+- Updated available sources.
+- Updated available resolvers.
+- Code cosmetics.
+
+
+------------------------
+Genesis v5.0.0 (28-Aug-15)
+------------------------
+
+- Complete addon re-work.
+- Code cosmetics.
+
+
+------------------------
+Genesis v4.8.5 (24-Jul-15)
+------------------------
+
+- Added Movienight source.
+- Removed Sweflix source.
+- Updated available sources.
+- Updated available resolvers.
+- Code cosmetics.
+
+
+------------------------
+Genesis v4.8.4 (16-Jul-15)
+------------------------
+
+- Re-work of navigation.
+- Updated available sources.
+- Updated available resolvers.
+- Fixed Portuguese and Brazilian subtitle search (Mafarricos).
+- Added option for converting subtitles to UTF-8 (mitnits).
+- Added documentaries to genres section (ooXei1sh).
+- Tweaked cache timeout calculation (fopina).
+- Added Russian translation (mitnits).
+- Added confirmation in download manager.
+- Fixed naming issue in download manager.
+- Fixed issue with views detection.
+- Tweaked context menus.
+- Code cosmetics.
+
+
+------------------------
+Genesis v4.8.3 (9-Jul-15)
+------------------------
+
+- Fixed available sources.
+- Fixed available resolvers.
+- Added Pubfilm source.
+- Removed Onlinemovies source.
+- Added download manager.
+- NOTE: You will have to set your download path again.
+- Tweaked views detection.
+- Tweaked tools section.
+- Code cosmetics.
+
+
+------------------------
 Genesis v4.8.2 (1-Jul-15)
 ------------------------
 

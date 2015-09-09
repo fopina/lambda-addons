@@ -1,4 +1,3 @@
-lambda's Kodi Add-ons
-===========
+Temporary test branch for Genesis
 
-Download and install add-ons from lambda repository.
+Go to master branch

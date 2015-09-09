@@ -42,11 +42,19 @@ except:
 try:
     imdb = params['imdb']
 except:
-    imdb = None
+    imdb = '0'
+try:
+    tmdb = params['tmdb']
+except:
+    tmdb = '0'
 try:
     tvdb = params['tvdb']
 except:
-    tvdb = None
+    tvdb = '0'
+try:
+    tvrage = params['tvrage']
+except:
+    tvrage = '0'
 try:
     season = params['season']
 except:
@@ -56,21 +64,25 @@ try:
 except:
     episode = None
 try:
-    show = params['show']
+    tvshowtitle = params['tvshowtitle']
 except:
-    show = None
+    tvshowtitle = None
 try:
-    show_alt = params['show_alt']
+    tvshowtitle = params['show']
 except:
-    show_alt = None
+    pass
+try:
+    alter = params['alter']
+except:
+    alter = '0'
+try:
+    alter = params['genre']
+except:
+    pass
 try:
     date = params['date']
 except:
     date = None
-try:
-    genre = params['genre']
-except:
-    genre = None
 try:
     url = params['url']
 except:
@@ -102,460 +114,228 @@ except:
 
 
 
-
 if action == None:
-    from modules.v4 import root
-    root().get()
+    from resources.lib.indexers import navigator
+    navigator.navigator().root()
 
-elif action == 'root_movies':
-    from modules.v4 import root
-    root().movies()
+elif action == 'movieNavigator':
+    from resources.lib.indexers import navigator
+    navigator.navigator().movies()
 
-elif action == 'root_shows':
-    from modules.v4 import root
-    root().shows()
+elif action == 'tvNavigator':
+    from resources.lib.indexers import navigator
+    navigator.navigator().tvshows()
 
-elif action == 'root_calendar':
-    from modules.v4 import root
-    root().calendar()
+elif action == 'myNavigator':
+    from resources.lib.indexers import navigator
+    navigator.navigator().genesis()
 
-elif action == 'root_genesis':
-    from modules.v4 import root
-    root().genesis()
+elif action == 'toolNavigator':
+    from resources.lib.indexers import navigator
+    navigator.navigator().tools()
 
-elif action == 'root_tools':
-    from modules.v4 import root
-    root().tools()
+elif action == 'libtoolNavigator':
+    from resources.lib.indexers import navigator
+    navigator.navigator().library()
 
-elif action == 'root_search':
-    from modules.v4 import root
-    root().search()
-
-elif action == 'root_library':
-    from modules.v4 import root
-    root().library()
-
-elif action == 'cache_clear_list':
-    from modules.v4 import index
-    index().cache_clear_list()
-
-elif action == 'cache_clear_src':
-    from modules.v4 import index
-    index().cache_clear_src()
-
-elif action == 'container_refresh':
-    from modules.v4 import index
-    index().container_refresh()
-
-elif action == 'item_queue':
-    from modules.v4 import contextMenu
-    contextMenu().item_queue()
-
-elif action == 'view_movies':
-    from modules.v4 import contextMenu
-    contextMenu().view('movies')
-
-elif action == 'view_tvshows':
-    from modules.v4 import contextMenu
-    contextMenu().view('tvshows')
-
-elif action == 'view_seasons':
-    from modules.v4 import contextMenu
-    contextMenu().view('seasons')
-
-elif action == 'view_episodes':
-    from modules.v4 import contextMenu
-    contextMenu().view('episodes')
-
-elif action == 'playlist_open':
-    from modules.v4 import contextMenu
-    contextMenu().playlist_open()
-
-elif action == 'settings_open':
-    from modules.v4 import contextMenu
-    contextMenu().settings_open()
-
-elif action == 'settings_general':
-    from modules.v4 import contextMenu
-    contextMenu().settings_open(cat=0.0)
-
-elif action == 'settings_playback':
-    from modules.v4 import contextMenu
-    contextMenu().settings_open(cat=1.0)
-
-elif action == 'settings_movies':
-    from modules.v4 import contextMenu
-    contextMenu().settings_open(cat=2.0)
-
-elif action == 'settings_tv':
-    from modules.v4 import contextMenu
-    contextMenu().settings_open(cat=3.0)
-
-elif action == 'settings_hostshd':
-    from modules.v4 import contextMenu
-    contextMenu().settings_open(cat=4.0)
-
-elif action == 'settings_hostssd':
-    from modules.v4 import contextMenu
-    contextMenu().settings_open(cat=5.0)
-
-elif action == 'settings_accounts':
-    from modules.v4 import contextMenu
-    contextMenu().settings_open(cat=6.1)
-
-elif action == 'settings_library':
-    from modules.v4 import contextMenu
-    contextMenu().settings_open(cat=7.0)
-
-elif action == 'settings_downloads':
-    from modules.v4 import contextMenu
-    contextMenu().settings_open(cat=8.0)
-
-elif action == 'settings_subtitles':
-    from modules.v4 import contextMenu
-    contextMenu().settings_open(cat=9.0)
-
-elif action == 'favourite_movie_add':
-    from modules.v4 import contextMenu
-    contextMenu().favourite_add('Movie', imdb, name, year, image, refresh=True)
-
-elif action == 'favourite_movie_from_search':
-    from modules.v4 import contextMenu
-    contextMenu().favourite_add('Movie', imdb, name, year, image)
-
-elif action == 'favourite_tv_add':
-    from modules.v4 import contextMenu
-    contextMenu().favourite_add('TV Show', imdb, name, year, image, refresh=True)
-
-elif action == 'favourite_tv_from_search':
-    from modules.v4 import contextMenu
-    contextMenu().favourite_add('TV Show', imdb, name, year, image)
-
-elif action == 'favourite_delete':
-    from modules.v4 import contextMenu
-    contextMenu().favourite_delete(imdb)
-
-elif action == 'trakt_manager':
-    from modules.v4 import contextMenu
-    contextMenu().trakt_manager('movie', name, imdb)
-
-elif action == 'trakt_tv_manager':
-    from modules.v4 import contextMenu
-    contextMenu().trakt_manager('show', name, tvdb)
-
-elif action == 'watched_movies':
-    from modules.v4 import contextMenu
-    contextMenu().playcount_movies(title, year, imdb, 7)
-
-elif action == 'unwatched_movies':
-    from modules.v4 import contextMenu
-    contextMenu().playcount_movies(title, year, imdb, 6)
-
-elif action == 'watched_episodes':
-    from modules.v4 import contextMenu
-    contextMenu().playcount_episodes(imdb, tvdb, season, episode, 7)
-
-elif action == 'unwatched_episodes':
-    from modules.v4 import contextMenu
-    contextMenu().playcount_episodes(imdb, tvdb, season, episode, 6)
-
-elif action == 'watched_shows':
-    from modules.v4 import contextMenu
-    contextMenu().playcount_shows(name, year, imdb, tvdb, '', 7)
-
-elif action == 'unwatched_shows':
-    from modules.v4 import contextMenu
-    contextMenu().playcount_shows(name, year, imdb, tvdb, '', 6)
-
-elif action == 'watched_seasons':
-    from modules.v4 import contextMenu
-    contextMenu().playcount_shows(name, year, imdb, tvdb, season, 7)
-
-elif action == 'unwatched_seasons':
-    from modules.v4 import contextMenu
-    contextMenu().playcount_shows(name, year, imdb, tvdb, season, 6)
-
-elif action == 'library_movie_add':
-    from modules.v4 import contextMenu
-    contextMenu().library_movie_add(name, title, year, imdb, url)
-
-elif action == 'library_movie_list':
-    from modules.v4 import contextMenu
-    contextMenu().library_movie_list(url)
-
-elif action == 'library_tv_add':
-    from modules.v4 import contextMenu
-    contextMenu().library_tv_add(name, year, imdb, tvdb)
-
-elif action == 'library_tv_list':
-    from modules.v4 import contextMenu
-    contextMenu().library_tv_list(url)
-
-elif action == 'library_update_tool':
-    from modules.v4 import contextMenu
-    contextMenu().library_update_tool()
-
-elif action == 'library_update':
-    from modules.v4 import contextMenu
-    contextMenu().library_update('true')
-
-elif action == 'library_trakt_collection':
-    from modules.v4 import contextMenu
-    contextMenu().library_movie_tool('trakt_collection')
-
-elif action == 'library_trakt_watchlist':
-    from modules.v4 import contextMenu
-    contextMenu().library_movie_tool('trakt_watchlist')
-
-elif action == 'library_imdb_watchlist':
-    from modules.v4 import contextMenu
-    contextMenu().library_movie_tool('imdb_watchlist')
-
-elif action == 'library_tv_trakt_collection':
-    from modules.v4 import contextMenu
-    contextMenu().library_tv_tool('trakt_tv_collection')
-
-elif action == 'library_tv_trakt_watchlist':
-    from modules.v4 import contextMenu
-    contextMenu().library_tv_tool('trakt_tv_watchlist')
-
-elif action == 'library_tv_imdb_watchlist':
-    from modules.v4 import contextMenu
-    contextMenu().library_tv_tool('imdb_tv_watchlist')
-
-elif action == 'toggle_movie_playback':
-    from modules.v4 import contextMenu
-    contextMenu().toggle_playback('movie', name, title, year, imdb, '', '', '', '', '', '', '')
-
-elif action == 'toggle_episode_playback':
-    from modules.v4 import contextMenu
-    contextMenu().toggle_playback('episode', name, title, year, imdb, tvdb, season, episode, show, show_alt, date, genre)
-
-elif action == 'download':
-    from modules.v4 import contextMenu
-    contextMenu().download(name, url, provider)
-
-elif action == 'service':
-    from modules.v4 import contextMenu
-    contextMenu().service()
+elif action == 'searchNavigator':
+    from resources.lib.indexers import navigator
+    navigator.navigator().search()
 
 elif action == 'movies':
-    from modules.v4 import movies
-    movies().get(url)
+    from resources.lib.indexers import movies
+    movies.movies().get(url)
 
-elif action == 'movies_userlist':
-    from modules.v4 import movies
-    movies().get(url)
+elif action == 'movieWidget':
+    from resources.lib.indexers import movies
+    movies.movies().widget()
 
-elif action == 'movies_popular':
-    from modules.v4 import movies
-    movies().popular()
+elif action == 'movieFavourites':
+    from resources.lib.indexers import movies
+    movies.movies().favourites()
 
-elif action == 'movies_boxoffice':
-    from modules.v4 import movies
-    movies().boxoffice()
+elif action == 'movieSearch':
+    from resources.lib.indexers import movies
+    movies.movies().search(query)
 
-elif action == 'movies_views':
-    from modules.v4 import movies
-    movies().views()
+elif action == 'moviePerson':
+    from resources.lib.indexers import movies
+    movies.movies().person(query)
 
-elif action == 'movies_oscars':
-    from modules.v4 import movies
-    movies().oscars()
+elif action == 'movieGenres':
+    from resources.lib.indexers import movies
+    movies.movies().genres()
 
-elif action == 'movies_added_hd':
-    from modules.v4 import movies
-    movies().added_hd()
+elif action == 'movieCertificates':
+    from resources.lib.indexers import movies
+    movies.movies().certifications()
 
-elif action == 'movies_added':
-    from modules.v4 import movies
-    movies().added()
+elif action == 'movieYears':
+    from resources.lib.indexers import movies
+    movies.movies().years()
 
-elif action == 'movies_theaters':
-    from modules.v4 import movies
-    movies().theaters()
+elif action == 'moviePersons':
+    from resources.lib.indexers import movies
+    movies.movies().persons()
 
-elif action == 'movies_trending':
-    from modules.v4 import movies
-    movies().trending()
+elif action == 'movieUserlists':
+    from resources.lib.indexers import movies
+    movies.movies().userlists()
 
-elif action == 'movies_featured':
-    from modules.v4 import movies
-    movies().featured()
+elif action == 'channels':
+    from resources.lib.indexers import channels
+    channels.channels().get()
 
-elif action == 'movies_trakt_collection':
-    from modules.v4 import movies
-    movies().trakt_collection()
+elif action == 'tvshows':
+    from resources.lib.indexers import tvshows
+    tvshows.tvshows().get(url)
 
-elif action == 'movies_trakt_watchlist':
-    from modules.v4 import movies
-    movies().trakt_watchlist()
+elif action == 'tvFavourites':
+    from resources.lib.indexers import tvshows
+    tvshows.tvshows().favourites()
 
-elif action == 'movies_imdb_watchlist':
-    from modules.v4 import movies
-    movies().imdb_watchlist()
+elif action == 'tvSearch':
+    from resources.lib.indexers import tvshows
+    tvshows.tvshows().search(query)
 
-elif action == 'movies_search':
-    from modules.v4 import movies
-    movies().search(query)
+elif action == 'tvPerson':
+    from resources.lib.indexers import tvshows
+    tvshows.tvshows().person(query)
 
-elif action == 'movies_favourites':
-    from modules.v4 import movies
-    movies().favourites()
+elif action == 'tvGenres':
+    from resources.lib.indexers import tvshows
+    tvshows.tvshows().genres()
 
-elif action == 'shows':
-    from modules.v4 import shows
-    shows().get(url)
+elif action == 'tvNetworks':
+    from resources.lib.indexers import tvshows
+    tvshows.tvshows().networks()
 
-elif action == 'shows_userlist':
-    from modules.v4 import shows
-    shows().get(url)
+elif action == 'tvYears':
+    from resources.lib.indexers import tvshows
+    tvshows.tvshows().years()
 
-elif action == 'shows_popular':
-    from modules.v4 import shows
-    shows().popular()
-
-elif action == 'shows_rating':
-    from modules.v4 import shows
-    shows().rating()
-
-elif action == 'shows_views':
-    from modules.v4 import shows
-    shows().views()
-
-elif action == 'shows_active':
-    from modules.v4 import shows
-    shows().active()
-
-elif action == 'shows_trending':
-    from modules.v4 import shows
-    shows().trending()
-
-elif action == 'shows_season_premieres':
-    from modules.v4 import shows
-    shows().season_premieres()
-
-elif action == 'shows_premieres':
-    from modules.v4 import shows
-    shows().premieres()
-
-elif action == 'shows_trakt_collection':
-    from modules.v4 import shows
-    shows().trakt_collection()
-
-elif action == 'shows_trakt_watchlist':
-    from modules.v4 import shows
-    shows().trakt_watchlist()
-
-elif action == 'shows_imdb_watchlist':
-    from modules.v4 import shows
-    shows().imdb_watchlist()
-
-elif action == 'shows_search':
-    from modules.v4 import shows
-    shows().search(query)
-
-elif action == 'shows_favourites':
-    from modules.v4 import shows
-    shows().favourites()
+elif action == 'tvUserlists':
+    from resources.lib.indexers import tvshows
+    tvshows.tvshows().userlists()
 
 elif action == 'seasons':
-    from modules.v4 import seasons
-    seasons().get(show, year, imdb, tvdb)
+    from resources.lib.indexers import episodes
+    episodes.seasons().get(tvshowtitle, year, imdb, tmdb, tvdb, tvrage)
 
 elif action == 'episodes':
-    from modules.v4 import episodes
-    episodes().get(show, year, imdb, tvdb, season)
+    from resources.lib.indexers import episodes
+    episodes.episodes().get(tvshowtitle, year, imdb, tmdb, tvdb, tvrage, season, episode)
 
-elif action == 'episodes2':
-    from modules.v4 import episodes
-    episodes().get2(show, year, imdb, tvdb, season, episode)
+elif action == 'calendar':
+    from resources.lib.indexers import episodes
+    episodes.episodes().calendar(url)
 
-elif action == 'episodes_calendar_1':
-    from modules.v4 import episodes
-    episodes().calendar(1)
+elif action == 'tvWidget':
+    from resources.lib.indexers import episodes
+    episodes.episodes().widget()
 
-elif action == 'episodes_calendar_2':
-    from modules.v4 import episodes
-    episodes().calendar(2)
+elif action == 'episodeFavourites':
+    from resources.lib.indexers import episodes
+    episodes.episodes().favourites()
 
-elif action == 'episodes_calendar_3':
-    from modules.v4 import episodes
-    episodes().calendar(3)
+elif action == 'calendars':
+    from resources.lib.indexers import episodes
+    episodes.episodes().calendars()
 
-elif action == 'episodes_calendar_4':
-    from modules.v4 import episodes
-    episodes().calendar(4)
+elif action == 'refresh':
+    from resources.lib.libraries import control
+    control.refresh()
 
-elif action == 'episodes_trakt_progress':
-    from modules.v4 import episodes
-    episodes().trakt_progress()
+elif action == 'queueItem':
+    from resources.lib.libraries import control
+    control.queueItem()
 
-elif action == 'episodes_trakt':
-    from modules.v4 import episodes
-    episodes().trakt_added()
+elif action == 'openPlaylist':
+    from resources.lib.libraries import control
+    control.openPlaylist()
 
-elif action == 'episodes_added':
-    from modules.v4 import episodes
-    episodes().added()
+elif action == 'openSettings':
+    from resources.lib.libraries import control
+    control.openSettings(query)
 
-elif action == 'people_movies':
-    from modules.v4 import people
-    people().movies(query)
+elif action == 'moviePlaycount':
+    from resources.lib.libraries import playcount
+    playcount.movies(title, year, imdb, query)
 
-elif action == 'people_shows':
-    from modules.v4 import people
-    people().shows(query)
+elif action == 'episodePlaycount':
+    from resources.lib.libraries import playcount
+    playcount.episodes(imdb, tvdb, season, episode, query)
 
-elif action == 'genres_movies':
-    from modules.v4 import genres
-    genres().movies()
-
-elif action == 'genres_shows':
-    from modules.v4 import genres
-    genres().shows()
-
-elif action == 'certificates_movies':
-    from modules.v4 import certificates
-    certificates().movies()
-
-elif action == 'certificates_shows':
-    from modules.v4 import certificates
-    certificates().shows()
-
-elif action == 'languages_movies':
-    from modules.v4 import languages
-    languages().movies()
-
-elif action == 'years_movies':
-    from modules.v4 import years
-    years().movies()
-
-elif action == 'channels_movies':
-    from modules.v4 import channels
-    channels().movies()
-
-elif action == 'userlists_movies':
-    from modules.v4 import userlists
-    userlists().movies()
-
-elif action == 'userlists_shows':
-    from modules.v4 import userlists
-    userlists().shows()
+elif action == 'tvPlaycount':
+    from resources.lib.libraries import playcount
+    playcount.tvshows(name, year, imdb, tvdb, season, query)
 
 elif action == 'trailer':
-    from modules.libraries.trailer import trailer
-    trailer().play(name, url)
+    from resources.lib.libraries import trailer
+    trailer.trailer().play(name, url)
+
+elif action == 'clearCache':
+    from resources.lib.libraries import cache
+    cache.clear()
+
+elif action == 'addFavourite':
+    from resources.lib.libraries import favourites
+    favourites.addFavourite(meta, content, query)
+
+elif action == 'deleteFavourite':
+    from resources.lib.libraries import favourites
+    favourites.deleteFavourite(meta, content)
+
+elif action == 'addView':
+    from resources.lib.libraries import views
+    views.addView(content)
+
+elif action == 'traktManager':
+    from resources.lib.libraries import trakt
+    trakt.manager(name, imdb, tvdb, content)
+
+elif action == 'movieToLibrary':
+    from resources.lib.libraries import libtools
+    libtools.libmovies().add(name, title, year, imdb, tmdb)
+
+elif action == 'moviesToLibrary':
+    from resources.lib.libraries import libtools
+    libtools.libmovies().range(url, query)
+
+elif action == 'tvshowToLibrary':
+    from resources.lib.libraries import libtools
+    libtools.libtvshows().add(tvshowtitle, year, imdb, tmdb, tvdb, tvrage)
+
+elif action == 'tvshowsToLibrary':
+    from resources.lib.libraries import libtools
+    libtools.libtvshows().range(url, query)
+
+elif action == 'updateLibrary':
+    from resources.lib.libraries import libtools
+    libtools.libepisodes().update(query)
+
+elif action == 'service':
+    from resources.lib.libraries import libtools
+    libtools.libepisodes().service()
 
 elif action == 'play':
-    from modules.sources import sources
-    sources().play(name, title, year, imdb, tvdb, season, episode, show, show_alt, date, genre, url)
+    from resources.lib.sources import sources
+    sources().play(name, title, year, imdb, tmdb, tvdb, tvrage, season, episode, tvshowtitle, alter, date, url)
 
-elif action == 'addPlayableItem':
-    from modules.sources import sources
-    sources().addPlayableItem(name, title, year, imdb, tvdb, season, episode, show, show_alt, date, genre, meta)
+elif action == 'sources':
+    from resources.lib.sources import sources
+    sources().addItem(name, title, year, imdb, tmdb, tvdb, tvrage, season, episode, tvshowtitle, alter, date, meta)
 
 elif action == 'playItem':
-    from modules.sources import sources
+    from resources.lib.sources import sources
     sources().playItem(content, name, imdb, tvdb, url, source, provider)
+
+elif action == 'alterSources':
+    from resources.lib.sources import sources
+    sources().alterSources(url, meta)
+
+elif action == 'clearSources':
+    from resources.lib.sources import sources
+    sources().clearSources()
+
 
