@@ -38,7 +38,6 @@ class TestSources(GenesisTestCase):
         self.assertEqual(len(self.movies), 20, msg='Failed to retrieve box office list')
 
     def movie_source(self, source_name):
-        return 0
         self.get_box_movies()
 
         from resources.lib.sources import sources
